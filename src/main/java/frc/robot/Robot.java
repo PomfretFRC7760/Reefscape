@@ -12,7 +12,6 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 
 
@@ -119,25 +118,30 @@ public class Robot extends TimedRobot {
 
   }
 
-  private double calculateChassisSpeed() {
-    double rightSpeed1 = Math.abs(rightEncoder1.getVelocity()); 
-    double rightSpeed2 = Math.abs(rightEncoder2.getVelocity()); 
+ private double calculateChassisSpeed() {
+  //i love dimensional analysis
+    double rightSpeed1 = Math.abs(rightEncoder1.getVelocity());
+    double rightSpeed2 = Math.abs(rightEncoder2.getVelocity());
 
     double leftSpeed1 = Math.abs(leftEncoder1.getVelocity());
-    // double leftSpeed2 = Math.abs(leftEncoder2.getVelocity()); 
+    // double leftSpeed2 = Math.abs(leftEncoder2.getVelocity());
 
-//temporary, remove later
+    // temporary, remove later
     double averageSpeedRPM = (leftSpeed1 + rightSpeed1 + rightSpeed2) / 3.0;
 
-    //double averageSpeedRPM = (leftSpeed1 + leftSpeed2 + rightSpeed1 + rightSpeed2) / 4.0;
+    // double averageSpeedRPM = (leftSpeed1 + leftSpeed2 + rightSpeed1 + rightSpeed2) / 4.0;
 
-    double wheelDiameterMeters = 0.1524; 
+    // gearbox reduction ratio
+    double gearboxReductionRatio = 10.71;
+    double wheelRPM = averageSpeedRPM / gearboxReductionRatio;
+
+    double wheelDiameterMeters = 0.1524; // 6 inches in meters
     double wheelCircumferenceMeters = Math.PI * wheelDiameterMeters;
-    double speedMetersPerSecond = (averageSpeedRPM / 60.0) * wheelCircumferenceMeters;
+
+    double speedMetersPerSecond = (wheelRPM / 60.0) * wheelCircumferenceMeters;
 
     return speedMetersPerSecond;
 }
-
 
   //put code in here later idk....
   //worlds or bust

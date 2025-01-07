@@ -118,20 +118,20 @@ public class Robot extends TimedRobot {
 
   }
 
- private double calculateChassisSpeed() {
-  //i love dimensional analysis
+  private double calculateChassisSpeed() {
+    // I love dimensional analysis
     double rightSpeed1 = Math.abs(rightEncoder1.getVelocity());
     double rightSpeed2 = Math.abs(rightEncoder2.getVelocity());
 
     double leftSpeed1 = Math.abs(leftEncoder1.getVelocity());
     // double leftSpeed2 = Math.abs(leftEncoder2.getVelocity());
 
-    // temporary, remove later
+    // Temporary, remove later
     double averageSpeedRPM = (leftSpeed1 + rightSpeed1 + rightSpeed2) / 3.0;
 
     // double averageSpeedRPM = (leftSpeed1 + leftSpeed2 + rightSpeed1 + rightSpeed2) / 4.0;
 
-    // gearbox reduction ratio
+    // Gearbox reduction ratio
     double gearboxReductionRatio = 10.71;
     double wheelRPM = averageSpeedRPM / gearboxReductionRatio;
 
@@ -140,7 +140,10 @@ public class Robot extends TimedRobot {
 
     double speedMetersPerSecond = (wheelRPM / 60.0) * wheelCircumferenceMeters;
 
-    return speedMetersPerSecond;
+    // Convert meters per second to kilometers per hour
+    double speedKilometersPerHour = speedMetersPerSecond * 3.6;
+
+    return speedKilometersPerHour;
 }
 
   //put code in here later idk....

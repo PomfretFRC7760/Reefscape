@@ -71,7 +71,6 @@ public class Robot extends TimedRobot {
     if (xstick.getRightStickButton()) {
       // stop robot
       mecanumDrive.stopMotor();
-      SmartDashboard.putString("Motor Status", "Stopped (Right Stick Pressed)");
       return;
   }
     // this controls the robot with the top notch specialty xbox controller

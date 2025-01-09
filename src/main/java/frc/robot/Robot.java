@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-
+import edu.wpi.first.cameraserver.CameraServer;
 
 public class Robot extends TimedRobot {
   private NetworkTable limelight;
@@ -55,6 +55,7 @@ public class Robot extends TimedRobot {
     gyro.reset(); 
     System.out.println(gyro.isConnected());
     limelight = NetworkTableInstance.getDefault().getTable("limelight");
+    CameraServer.startAutomaticCapture();
   }
   
   @Override

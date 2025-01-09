@@ -14,8 +14,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 
 public class Robot extends TimedRobot {
+  private NetworkTable limelight;
+  private boolean limelightDetected = false;
 //if it doesn't fit, you got the wrong hole
 //screwed past max screw length and snapped the gate driver PCB
   private final SparkFlex rightMotor1 = new SparkFlex(2, MotorType.kBrushless);
@@ -46,9 +51,10 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     mecanumDrive.setSafetyEnabled(false);
-    gyro.calibrate(); // Calibrate the gyro during initialization
-    gyro.reset(); // Reset the gyro to start at 0 degrees
+    gyro.calibrate(); 
+    gyro.reset(); 
     System.out.println(gyro.isConnected());
+    limelight = NetworkTableInstance.getDefault().getTable("limelight");
   }
   
   @Override
@@ -67,7 +73,28 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+//limelight testing
+    double latency = limelight.getEntry("tl").getDouble(-1.0);
 
+      
+        if (latency == -1.0) {
+          System.out.println("Limelight not detected.");
+          limelightDetected = false; 
+      } else if (!limelightDetected) {
+          
+          System.out.println("Limelight detected! Latency: " + latency + " ms");
+          limelightDetected = true; 
+      }
+    double tv = limelight.getEntry("tv").getDouble(0.0); 
+    if (tv == 1.0) {
+       
+        double tid = limelight.getEntry("tid").getDouble(-1.0); 
+        
+        
+        if (tid != -1.0) {
+            System.out.println("Detected AprilTag with ID: " + tid);
+        }
+    }
     if (xstick.getRightStickButton()) {
       // stop robot
       mecanumDrive.stopMotor();

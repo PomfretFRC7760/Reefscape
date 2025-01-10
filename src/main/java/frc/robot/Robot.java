@@ -5,6 +5,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -16,8 +18,13 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoSink;
+import edu.wpi.first.cscore.VideoSource;
+
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
@@ -25,6 +32,9 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 public class Robot extends TimedRobot {
   private NetworkTable limelight;
   private boolean limelightDetected = false;
+  VideoSink server;
+  UsbCamera camera1;
+  UsbCamera camera2;
 //if it doesn't fit, you got the wrong hole
 //screwed past max screw length and snapped the gate driver PCB
   private final SparkFlex rightMotor1 = new SparkFlex(2, MotorType.kBrushless);
@@ -66,7 +76,9 @@ public class Robot extends TimedRobot {
     gyro.reset(); 
     System.out.println(gyro.isConnected());
     limelight = NetworkTableInstance.getDefault().getTable("limelight");
-    CameraServer.startAutomaticCapture();
+    camera1 = CameraServer.startAutomaticCapture(0);
+    camera2 = CameraServer.startAutomaticCapture(1);
+    server = CameraServer.getServer();
   }
   
   @Override
@@ -120,6 +132,12 @@ public class Robot extends TimedRobot {
     double zRotation = xstick.getRightX();
 
     double yawAngle = gyro.getAngle(IMUAxis.kZ);
+
+    if (xstick.getYButton()) {
+      server.setSource(camera2);
+  } else {
+      server.setSource(camera1);
+  }
 
     // gotta make this a press and hold because my dumbass is gonna press it and accidentally reset the gyro
     if (xstick.getXButton()) {

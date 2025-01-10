@@ -6,6 +6,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
@@ -17,6 +18,9 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.cameraserver.CameraServer;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix.motorcontrol.ControlMode;
+
 
 public class Robot extends TimedRobot {
   private NetworkTable limelight;
@@ -27,7 +31,12 @@ public class Robot extends TimedRobot {
   private final SparkFlex rightMotor2 = new SparkFlex(3, MotorType.kBrushless);
   private final SparkFlex leftMotor1 = new SparkFlex(1, MotorType.kBrushless);
   private final PWMSparkMax leftMotor2 = new PWMSparkMax(4);
-  
+
+  private final SparkMax auxMotor1 = new SparkMax(5,MotorType.kBrushed);
+  private final SparkMax auxMotor2 = new SparkMax(6,MotorType.kBrushed);
+
+  private final VictorSPX auxMotor3 = new VictorSPX(7);
+  private final VictorSPX auxMotor4 = new VictorSPX(8);
   private final RelativeEncoder rightEncoder1 = rightMotor1.getEncoder();
   private final RelativeEncoder rightEncoder2 = rightMotor2.getEncoder();
 
@@ -37,6 +46,8 @@ public class Robot extends TimedRobot {
   private long buttonPressStartTime = 0; 
   private boolean isButtonPressed = false;
   private long lastPrintTime = 0;
+  private boolean previousBButton = false;
+  private boolean previousAButton = false;
 
   //Don't be like a certain idiot and have the motors in the wrong order and then spend half an hour trying to figure out why it is strafing instead of rotating
 
@@ -126,7 +137,7 @@ public class Robot extends TimedRobot {
   } else {
       isButtonPressed = false;
   }
-    
+  controlAuxMotor();
     //gotta make sure i'm not a complete jackass
     long currentTime = System.currentTimeMillis();
     if (currentTime - lastPrintTime >= 20) { 
@@ -143,6 +154,8 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("Right Stick X ", zRotation);
       SmartDashboard.putNumber("Chassis Speed", chassisSpeed);
       lastPrintTime = currentTime;
+
+      
   }
 
   Rotation2d gyroRotation = Rotation2d.fromDegrees(-yawAngle);
@@ -178,6 +191,30 @@ public class Robot extends TimedRobot {
     double speedKilometersPerHour = speedMetersPerSecond * 3.6;
 
     return speedKilometersPerHour;
+}
+private void controlAuxMotor() {
+
+  boolean currentBButton = xstick.getBButton();
+  boolean currentAButton = xstick.getAButton();
+
+
+  if (currentBButton && !previousBButton) {
+      auxMotor1.set(1.0);
+      auxMotor2.set(1.0);
+      auxMotor3.set(ControlMode.PercentOutput, 1.0);
+      auxMotor4.set(ControlMode.PercentOutput, 1.0);
+  }
+
+  if (currentAButton && !previousAButton) {
+      auxMotor1.set(0.0); 
+      auxMotor2.set(0.0);
+      auxMotor3.set(ControlMode.PercentOutput, 0.0);
+      auxMotor4.set(ControlMode.PercentOutput, 0.0);
+  }
+
+
+  previousBButton = currentBButton;
+  previousAButton = currentAButton;
 }
 
   //put code in here later idk....

@@ -192,8 +192,6 @@ public class Robot extends TimedRobot {
     double leftSpeed1 = Math.abs(leftEncoder1.getVelocity());
     double leftSpeed2 = Math.abs(leftEncoder2.getVelocity());
 
-    // Temporary, remove later
-
     double averageSpeedRPM = (leftSpeed1 + leftSpeed2 + rightSpeed1 + rightSpeed2) / 4.0;
 
     // Gearbox reduction ratio

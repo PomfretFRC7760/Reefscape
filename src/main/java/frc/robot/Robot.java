@@ -4,17 +4,22 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkMax;
+//import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
+import edu.wpi.first.math.geometry.Pose2d;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -22,8 +27,8 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoSink;
 
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import com.ctre.phoenix.motorcontrol.ControlMode;
+// import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+// import com.ctre.phoenix.motorcontrol.ControlMode;
 
 
 public class Robot extends TimedRobot {
@@ -32,6 +37,14 @@ public class Robot extends TimedRobot {
   VideoSink server;
   UsbCamera camera1;
   UsbCamera camera2;
+  // Locations of the wheels relative to the robot center.
+Translation2d m_frontLeftLocation = new Translation2d(0.292, 0.292);
+Translation2d m_frontRightLocation = new Translation2d(0.292, -0.292);
+Translation2d m_backLeftLocation = new Translation2d(-0.292, 0.292);
+Translation2d m_backRightLocation = new Translation2d(-0.292, -0.292);
+// Creating my kinematics object using the wheel locations.
+MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
+  m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation);
 //if it doesn't fit, you got the wrong hole
 //screwed past max screw length and snapped the gate driver PCB
   private final SparkFlex rightMotor1 = new SparkFlex(2, MotorType.kBrushless);
@@ -54,6 +67,8 @@ public class Robot extends TimedRobot {
   private long buttonPressStartTime = 0; 
   private boolean isButtonPressed = false;
   private long lastPrintTime = 0;
+  private double yawAngle = gyro.getAngle(IMUAxis.kZ);
+  Rotation2d gyroRotation = Rotation2d.fromDegrees(-yawAngle);
   //private boolean previousBButton = false;
   //private boolean previousAButton = false;
 
@@ -65,7 +80,24 @@ public class Robot extends TimedRobot {
   //change later if we get a better joystick
   Joystick stick = new Joystick(0);
   XboxController xstick = new XboxController(1);
+  double gearRatio = 10.71; // Gearbox reduction ratio
+  double wheelCircumference = Math.PI * 0.1524; // 6-inch wheels (in meters)
+  
+  // Convert encoder positions to wheel positions
+  double leftWheelPosition1 = leftEncoder1.getPosition() / gearRatio * wheelCircumference;
+  double rightWheelPosition1 = rightEncoder1.getPosition() / gearRatio * wheelCircumference;
+  double leftWheelPosition2 = leftEncoder2.getPosition() / gearRatio * wheelCircumference;
+  double rightWheelPosition2 = rightEncoder2.getPosition() / gearRatio * wheelCircumference;
 
+  MecanumDriveOdometry m_odometry = new MecanumDriveOdometry(
+    m_kinematics,
+    gyroRotation,
+    new MecanumDriveWheelPositions(
+      leftWheelPosition1, rightWheelPosition1, leftWheelPosition2, rightWheelPosition2
+    ),
+    new Pose2d(5.0, 13.5, new Rotation2d())
+  );
+  
   @Override
   public void robotInit() {
 
@@ -77,6 +109,8 @@ public class Robot extends TimedRobot {
     camera1 = CameraServer.startAutomaticCapture(0);
     camera2 = CameraServer.startAutomaticCapture(1);
     server = CameraServer.getServer();
+
+    
   }
   
   @Override
@@ -92,6 +126,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {}
   
+
+  private Pose2d m_pose;
 
   @Override
   public void teleopPeriodic() {
@@ -122,6 +158,21 @@ public class Robot extends TimedRobot {
       mecanumDrive.stopMotor();
       return;
   }
+  double gearRatio = 10.71; // Gearbox reduction ratio
+  double wheelCircumference = Math.PI * 0.1524; // 6-inch wheels (in meters)
+  double yawAngle = gyro.getAngle(IMUAxis.kZ);
+  Rotation2d gyroRotation = Rotation2d.fromDegrees(-yawAngle);
+  // Convert encoder positions to wheel positions
+  double leftWheelPosition1 = leftEncoder1.getPosition() / gearRatio * wheelCircumference;
+  double rightWheelPosition1 = rightEncoder1.getPosition() / gearRatio * wheelCircumference;
+  double leftWheelPosition2 = leftEncoder2.getPosition() / gearRatio * wheelCircumference;
+  double rightWheelPosition2 = rightEncoder2.getPosition() / gearRatio * wheelCircumference;
+  var wheelPositions = new MecanumDriveWheelPositions(
+    leftWheelPosition1, rightWheelPosition1, leftWheelPosition2, rightWheelPosition2);
+  // Get the rotation of the robot from the gyro.
+  var gyroAngle = gyroRotation;
+  // Update the pose
+  m_pose = m_odometry.update(gyroAngle, wheelPositions);
     // this controls the robot with the top notch specialty xbox controller
 
     //joystick is unused, might change later
@@ -132,7 +183,7 @@ public class Robot extends TimedRobot {
     zRotation = 0;
 }
 
-    double yawAngle = gyro.getAngle(IMUAxis.kZ);
+    
 
     if (xstick.getYButton()) {
       server.setSource(camera2);
@@ -172,12 +223,15 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("Left Stick X ", xSpeed);
       SmartDashboard.putNumber("Right Stick X ", zRotation);
       SmartDashboard.putNumber("Chassis Speed", chassisSpeed);
+      SmartDashboard.putNumber("Robot Pose X (meters)", m_pose.getX());
+      SmartDashboard.putNumber("Robot Pose Y (meters)", m_pose.getY());
+      SmartDashboard.putNumber("Robot Pose Heading (degrees)", m_pose.getRotation().getDegrees());  
       lastPrintTime = currentTime;
 
       
   }
 
-  Rotation2d gyroRotation = Rotation2d.fromDegrees(-yawAngle);
+  
 
   // DRIVE!!!!!!@!@!@!@
   mecanumDrive.driveCartesian(ySpeed, -xSpeed, -zRotation, gyroRotation);
@@ -235,6 +289,8 @@ public class Robot extends TimedRobot {
 
   //put code in here later idk....
   //worlds or bust
+
+  
   @Override
   public void disabledInit() {}
 

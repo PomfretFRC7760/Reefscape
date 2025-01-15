@@ -234,24 +234,24 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
 
     // Example: Use the toggle state for something
     if (bToggleState) {
-      if (ySpeed < -0.15) {
-        ySpeed = -0.15;
+      if (ySpeed < -0.1) {
+        ySpeed = -0.1;
       }
-      if (ySpeed > 0.15) {
-        ySpeed = 0.15;
+      if (ySpeed > 0.1) {
+        ySpeed = 0.1;
       }
-      if (xSpeed < -0.15) {
-        ySpeed = -0.15;
+      if (xSpeed < -0.1) {
+        xSpeed = -0.1;
 
       }
-      if (xSpeed > 0.15) {
-        xSpeed = 0.15;
+      if (xSpeed > 0.1) {
+        xSpeed = 0.1;
       }
-      if (zRotation < -0.15) {
-        zRotation = -0.15;
+      if (zRotation < -0.1) {
+        zRotation = -0.1;
       }
-      if (zRotation > 0.15) {
-        zRotation = 0.15;
+      if (zRotation > 0.1) {
+        zRotation = 0.1;
       }
       if (!isModeConfigured){
         leftMotor1.configure(slowConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);

@@ -254,10 +254,10 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
         zRotation = 0.15;
       }
       if (!isModeConfigured){
-        leftMotor1.configure(fastConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      leftMotor2.configure(fastConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      rightMotor1.configure(fastConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      rightMotor2.configure(fastConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        leftMotor1.configure(slowConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        leftMotor2.configure(slowConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        rightMotor1.configure(slowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        rightMotor2.configure(slowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         SmartDashboard.putNumber("Ramp rate", leftMotor2.configAccessor.getOpenLoopRampRate());
         isModeConfigured= true;
@@ -265,10 +265,11 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
       SmartDashboard.putString("SLOW MODE", "ON");
     } else {
       if (!isModeConfigured){
-        leftMotor1.configure(slowConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        leftMotor2.configure(slowConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        rightMotor1.configure(slowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        rightMotor2.configure(slowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        
+        leftMotor1.configure(fastConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      leftMotor2.configure(fastConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      rightMotor1.configure(fastConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      rightMotor2.configure(fastConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
       SmartDashboard.putNumber("Ramp rate", leftMotor2.configAccessor.getOpenLoopRampRate());
       isModeConfigured= true;
       }

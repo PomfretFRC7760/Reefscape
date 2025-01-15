@@ -5,9 +5,14 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 //import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -71,6 +76,14 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
   Rotation2d gyroRotation = Rotation2d.fromDegrees(-yawAngle);
   //private boolean previousBButton = false;
   //private boolean previousAButton = false;
+  private boolean bToggleState = false;
+  private boolean bButtonPreviousState = false;
+
+  SparkFlexConfig slowConfigInvert = new SparkFlexConfig();
+  SparkFlexConfig slowConfig = new SparkFlexConfig();
+  SparkFlexConfig fastConfigInvert = new SparkFlexConfig();
+  SparkFlexConfig fastConfig = new SparkFlexConfig();
+  boolean isModeConfigured=false;
 
   //Don't be like a certain idiot and have the motors in the wrong order and then spend half an hour trying to figure out why it is strafing instead of rotating
 
@@ -109,8 +122,32 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
     camera1 = CameraServer.startAutomaticCapture(0);
     camera2 = CameraServer.startAutomaticCapture(1);
     server = CameraServer.getServer();
-
     
+
+
+        slowConfigInvert
+          .inverted(true)
+          .openLoopRampRate(0.2)
+          .closedLoopRampRate(0.2);
+
+        slowConfig
+          .openLoopRampRate(0.2)
+          .closedLoopRampRate(0.2);
+
+          fastConfigInvert
+            .inverted(true)
+            .openLoopRampRate(0)
+            .closedLoopRampRate(0);
+  
+          fastConfig
+            .openLoopRampRate(0)
+            .closedLoopRampRate(0);
+
+            leftMotor1.configure(fastConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            leftMotor2.configure(fastConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            rightMotor1.configure(fastConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            rightMotor2.configure(fastConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            SmartDashboard.putNumber("Ramp rate", leftMotor2.configAccessor.getOpenLoopRampRate());
   }
   
   @Override
@@ -131,6 +168,7 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
 
   @Override
   public void teleopPeriodic() {
+    
 //limelight testing
     double latency = limelight.getEntry("tl").getDouble(-1.0);
 
@@ -179,10 +217,63 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
     double ySpeed = xstick.getLeftY();
     double xSpeed = xstick.getLeftX();
     double zRotation = xstick.getRightX();
-    if (Math.abs(zRotation) < 0.075) {
-    zRotation = 0;
-}
+//     if (Math.abs(zRotation) < 0.075) {
+//     zRotation = 0;
+// }
+    if (xstick.getBButton()){
+      isModeConfigured=false;
+    }
+    boolean bButtonCurrentState = xstick.getBButton();
+    // Detect the rising edge (button just pressed)
+    if (bButtonCurrentState && !bButtonPreviousState) {
+        bToggleState = !bToggleState; // Toggle the state
+    }
 
+    // Store the current state as the previous state for the next loop
+    bButtonPreviousState = bButtonCurrentState;
+
+    // Example: Use the toggle state for something
+    if (bToggleState) {
+      if (ySpeed < -0.15) {
+        ySpeed = -0.15;
+      }
+      if (ySpeed > 0.15) {
+        ySpeed = 0.15;
+      }
+      if (xSpeed < -0.15) {
+        ySpeed = -0.15;
+
+      }
+      if (xSpeed > 0.15) {
+        xSpeed = 0.15;
+      }
+      if (zRotation < -0.15) {
+        zRotation = -0.15;
+      }
+      if (zRotation > 0.15) {
+        zRotation = 0.15;
+      }
+      if (!isModeConfigured){
+        leftMotor1.configure(fastConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      leftMotor2.configure(fastConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      rightMotor1.configure(fastConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      rightMotor2.configure(fastConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        
+        SmartDashboard.putNumber("Ramp rate", leftMotor2.configAccessor.getOpenLoopRampRate());
+        isModeConfigured= true;
+      }
+      SmartDashboard.putString("SLOW MODE", "ON");
+    } else {
+      if (!isModeConfigured){
+        leftMotor1.configure(slowConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        leftMotor2.configure(slowConfigInvert, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        rightMotor1.configure(slowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        rightMotor2.configure(slowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      SmartDashboard.putNumber("Ramp rate", leftMotor2.configAccessor.getOpenLoopRampRate());
+      isModeConfigured= true;
+      }
+      SmartDashboard.putString("SLOW MODE", "OFF");
+    }
     
 
     if (xstick.getYButton()) {
@@ -296,7 +387,21 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
 
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    if (xstick.getXButton()) {
+      if (!isButtonPressed) {
+          buttonPressStartTime = System.currentTimeMillis();
+          isButtonPressed = true; 
+      }
+
+      // 0.5 seconds hold, might make longer if i still manage to accidentally reset it
+      if (isButtonPressed && (System.currentTimeMillis() - buttonPressStartTime >= 500)) {
+        gyro.calibrate();  
+        gyro.reset(); // gyro reset, hopefully this never has to be used during competition
+          isButtonPressed = false; 
+      }
+    }
+  }
 
 
 

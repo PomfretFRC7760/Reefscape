@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkFlex;
 //import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.RelativeEncoder;
@@ -43,10 +44,10 @@ public class Robot extends TimedRobot {
   UsbCamera camera1;
   UsbCamera camera2;
   // Locations of the wheels relative to the robot center.
-Translation2d m_frontLeftLocation = new Translation2d(0.292, 0.292);
-Translation2d m_frontRightLocation = new Translation2d(0.292, -0.292);
-Translation2d m_backLeftLocation = new Translation2d(-0.292, 0.292);
-Translation2d m_backRightLocation = new Translation2d(-0.292, -0.292);
+Translation2d m_frontLeftLocation = new Translation2d(-0.2921, 0.2667);
+Translation2d m_frontRightLocation = new Translation2d(0.2921, 0.2667);
+Translation2d m_backLeftLocation = new Translation2d(-0.2921, -0.2667);
+Translation2d m_backRightLocation = new Translation2d(0.2921, -0.2667);
 // Creating my kinematics object using the wheel locations.
 MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
   m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation);
@@ -68,7 +69,10 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
   private final RelativeEncoder leftEncoder1 = leftMotor1.getEncoder();
   private final RelativeEncoder leftEncoder2 = leftMotor2.getEncoder();
 
+  
+
   private final ADIS16470_IMU gyro = new ADIS16470_IMU();
+  
   private long buttonPressStartTime = 0; 
   private boolean isButtonPressed = false;
   private long lastPrintTime = 0;
@@ -93,15 +97,17 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
   //change later if we get a better joystick
   Joystick stick = new Joystick(0);
   XboxController xstick = new XboxController(1);
+  double motorDiameter = 0.05;
   double gearRatio = 10.71; // Gearbox reduction ratio
   double wheelCircumference = Math.PI * 0.1524; // 6-inch wheels (in meters)
+
+  private Pose2d m_targetPose;
   
   // Convert encoder positions to wheel positions
   double leftWheelPosition1 = leftEncoder1.getPosition() / gearRatio * wheelCircumference;
   double rightWheelPosition1 = rightEncoder1.getPosition() / gearRatio * wheelCircumference;
   double leftWheelPosition2 = leftEncoder2.getPosition() / gearRatio * wheelCircumference;
   double rightWheelPosition2 = rightEncoder2.getPosition() / gearRatio * wheelCircumference;
-
   MecanumDriveOdometry m_odometry = new MecanumDriveOdometry(
     m_kinematics,
     gyroRotation,
@@ -114,6 +120,10 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
   @Override
   public void robotInit() {
 
+    leftEncoder1.setPosition(0);
+    leftEncoder2.setPosition(0);
+    rightEncoder1.setPosition(0);
+    rightEncoder2.setPosition(0);
     mecanumDrive.setSafetyEnabled(false);
     gyro.calibrate(); 
     gyro.reset(); 
@@ -153,12 +163,61 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
   @Override
   public void robotPeriodic() {}
 
-  @Override
-  public void autonomousInit() {}
+@Override
+public void autonomousInit() {
+    // Reset encoders and gyro before starting autonomous
+    leftEncoder1.setPosition(0);
+    leftEncoder2.setPosition(0);
+    rightEncoder1.setPosition(0);
+    rightEncoder2.setPosition(0);
+    gyro.reset();
+
+    // Get the current pose
+    m_pose = m_odometry.getPoseMeters();
+
+    // Calculate the target pose (1 meter forward in the current direction)
+    m_targetPose = new Pose2d(
+        m_pose.getX() + 1.0, // Move forward 1 meter
+        m_pose.getY(),       // Maintain current Y position
+        m_pose.getRotation() // Maintain current orientation
+    );
+}
+
+@Override
+public void autonomousPeriodic() {
+    // Update odometry
+    m_pose = m_odometry.update(
+        Rotation2d.fromDegrees(-gyro.getAngle(IMUAxis.kZ)), // Current gyro angle
+        new MecanumDriveWheelPositions(
+            leftEncoder1.getPosition() / gearRatio * wheelCircumference,
+            rightEncoder1.getPosition() / gearRatio * wheelCircumference,
+            leftEncoder2.getPosition() / gearRatio * wheelCircumference,
+            rightEncoder2.getPosition() / gearRatio * wheelCircumference
+        )
+    );
+
+    // Calculate the distance to the target pose
+    double distanceToTarget = m_targetPose.getTranslation().getDistance(m_pose.getTranslation());
+
+    // If the robot is within 0.05 meters (5 cm) of the target, stop
+    if (distanceToTarget <= 0.05) {
+        mecanumDrive.stopMotor();
+        return;
+    }
+
+    // Drive forward using simple proportional control
+    double kP = 0.5; // Proportional control constant (tune as needed)
+    double speed = kP * distanceToTarget;
+
+    // Cap speed to avoid overshooting
+    speed = Math.min(speed, 0.3); // Max speed = 0.3
+    speed = Math.max(speed, 0.1); // Min speed = 0.1
+
+    // Drive straight towards the target
+    mecanumDrive.driveCartesian(speed, 0, 0, m_pose.getRotation());
+}
 
 
-  @Override
-  public void autonomousPeriodic() {}
 
   @Override
   public void teleopInit() {}
@@ -205,6 +264,11 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
   double rightWheelPosition1 = rightEncoder1.getPosition() / gearRatio * wheelCircumference;
   double leftWheelPosition2 = leftEncoder2.getPosition() / gearRatio * wheelCircumference;
   double rightWheelPosition2 = rightEncoder2.getPosition() / gearRatio * wheelCircumference;
+  SmartDashboard.putNumber("Left Front Position",leftEncoder1.getPosition());
+  SmartDashboard.putNumber("Left Back Position",leftEncoder2.getPosition());
+  SmartDashboard.putNumber("Right Front Position",rightEncoder1.getPosition());
+  SmartDashboard.putNumber("Right Back Position",rightEncoder1.getPosition());
+  SmartDashboard.putNumber("Right Back True Position",rightEncoder1.getPosition() / gearRatio * wheelCircumference);
   var wheelPositions = new MecanumDriveWheelPositions(
     leftWheelPosition1, rightWheelPosition1, leftWheelPosition2, rightWheelPosition2);
   // Get the rotation of the robot from the gyro.
@@ -292,6 +356,10 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
 
       // 0.5 seconds hold, might make longer if i still manage to accidentally reset it
       if (isButtonPressed && (System.currentTimeMillis() - buttonPressStartTime >= 500)) {
+        leftEncoder1.setPosition(0);
+    leftEncoder2.setPosition(0);
+    rightEncoder1.setPosition(0);
+    rightEncoder2.setPosition(0);
         gyro.calibrate();  
         gyro.reset(); // gyro reset, hopefully this never has to be used during competition
           isButtonPressed = false; 

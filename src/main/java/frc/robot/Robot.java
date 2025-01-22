@@ -68,6 +68,7 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
 
   private final RelativeEncoder leftEncoder1 = leftMotor1.getEncoder();
   private final RelativeEncoder leftEncoder2 = leftMotor2.getEncoder();
+  private boolean isAligning = false;
 
   
 
@@ -163,59 +164,60 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
   @Override
   public void robotPeriodic() {}
 
-@Override
-public void autonomousInit() {
-    // Reset encoders and gyro before starting autonomous
-    leftEncoder1.setPosition(0);
-    leftEncoder2.setPosition(0);
-    rightEncoder1.setPosition(0);
-    rightEncoder2.setPosition(0);
-    gyro.reset();
-
-    // Get the current pose
-    m_pose = m_odometry.getPoseMeters();
-
-    // Calculate the target pose (1 meter forward in the current direction)
-    m_targetPose = new Pose2d(
-        m_pose.getX() + 1.0, // Move forward 1 meter
-        m_pose.getY(),       // Maintain current Y position
-        m_pose.getRotation() // Maintain current orientation
-    );
-}
-
-@Override
-public void autonomousPeriodic() {
-    // Update odometry
-    m_pose = m_odometry.update(
-        Rotation2d.fromDegrees(-gyro.getAngle(IMUAxis.kZ)), // Current gyro angle
-        new MecanumDriveWheelPositions(
-            leftEncoder1.getPosition() / gearRatio * wheelCircumference,
-            rightEncoder1.getPosition() / gearRatio * wheelCircumference,
-            leftEncoder2.getPosition() / gearRatio * wheelCircumference,
-            rightEncoder2.getPosition() / gearRatio * wheelCircumference
-        )
-    );
-
-    // Calculate the distance to the target pose
-    double distanceToTarget = m_targetPose.getTranslation().getDistance(m_pose.getTranslation());
-
-    // If the robot is within 0.05 meters (5 cm) of the target, stop
-    if (distanceToTarget <= 0.05) {
-        mecanumDrive.stopMotor();
-        return;
-    }
-
-    // Drive forward using simple proportional control
-    double kP = 0.5; // Proportional control constant (tune as needed)
-    double speed = kP * distanceToTarget;
-
-    // Cap speed to avoid overshooting
-    speed = Math.min(speed, 0.3); // Max speed = 0.3
-    speed = Math.max(speed, 0.1); // Min speed = 0.1
-
-    // Drive straight towards the target
-    mecanumDrive.driveCartesian(speed, 0, 0, m_pose.getRotation());
-}
+  @Override
+  public void autonomousInit() {
+      // Reset encoders and gyro before starting autonomous
+      leftEncoder1.setPosition(0);
+      leftEncoder2.setPosition(0);
+      rightEncoder1.setPosition(0);
+      rightEncoder2.setPosition(0);
+      gyro.reset();
+  
+      // Get the current pose
+      m_pose = m_odometry.getPoseMeters();
+  
+      // Calculate the target pose (1 meter backward in the current direction)
+      m_targetPose = new Pose2d(
+          m_pose.getX() - 1.0, // Move backward 1 meter
+          m_pose.getY(),       // Maintain current Y position
+          m_pose.getRotation() // Maintain current orientation
+      );
+  }
+  
+  @Override
+  public void autonomousPeriodic() {
+      // Update odometry
+      m_pose = m_odometry.update(
+          Rotation2d.fromDegrees(-gyro.getAngle(IMUAxis.kZ)), // Current gyro angle
+          new MecanumDriveWheelPositions(
+              leftEncoder1.getPosition() / gearRatio * wheelCircumference,
+              rightEncoder1.getPosition() / gearRatio * wheelCircumference,
+              leftEncoder2.getPosition() / gearRatio * wheelCircumference,
+              rightEncoder2.getPosition() / gearRatio * wheelCircumference
+          )
+      );
+  
+      // Calculate the distance to the target pose
+      double distanceToTarget = m_targetPose.getTranslation().getDistance(m_pose.getTranslation());
+  
+      // If the robot is at the target (distance == 0), stop
+      if (distanceToTarget == 0) {
+          mecanumDrive.stopMotor();
+          return;
+      }
+  
+      // Drive backward using simple proportional control
+      double kP = 0.25; // Halve the proportional control constant (was 0.5)
+      double speed = kP * distanceToTarget;
+  
+      // Cap speed to half the previous range
+      speed = Math.min(speed, 0.15); // Max speed = 0.15 (half of 0.3)
+      speed = Math.max(speed, 0.05); // Min speed = 0.05 (half of 0.1)
+  
+      // Drive straight towards the target (negative X direction for backward movement)
+      mecanumDrive.driveCartesian(-speed, 0, 0, m_pose.getRotation());
+  }
+  
 
 
 
@@ -255,6 +257,11 @@ public void autonomousPeriodic() {
       mecanumDrive.stopMotor();
       return;
   }
+    if (xstick.getRightBumper()) {
+      startAutoAlignWithAprilTag();
+
+    }
+    autoAlignWithAprilTag();
   double gearRatio = 10.71; // Gearbox reduction ratio
   double wheelCircumference = Math.PI * 0.1524; // 6-inch wheels (in meters)
   double yawAngle = gyro.getAngle(IMUAxis.kZ);
@@ -393,8 +400,11 @@ public void autonomousPeriodic() {
 
   
 
-  // DRIVE!!!!!!@!@!@!@
-  mecanumDrive.driveCartesian(ySpeed, -xSpeed, -zRotation, gyroRotation);
+  if(bToggleState){
+    mecanumDrive.driveCartesian(ySpeed, -xSpeed, -zRotation);
+  } else {
+    mecanumDrive.driveCartesian(ySpeed, -xSpeed, -zRotation, gyroRotation);
+  }
 
   }
 
@@ -470,30 +480,88 @@ public void autonomousPeriodic() {
           isButtonPressed = false; 
       }
     }
+      
+    }
+
+
+
+
+      @Override
+      public void testInit() {}
+
+
+
+      @Override
+      public void testPeriodic() {}
+
+
+
+      @Override
+      public void simulationInit() {}
+
+
+
+
+      @Override
+      public void simulationPeriodic() {}
+
+      public void startAutoAlignWithAprilTag() {
+        isAligning = true; // Start alignment process
+    }
+    
+    public void autoAlignWithAprilTag() {
+      if (!isAligning) {
+          System.out.println("Alignment not active. Exiting method.");
+          return; // Exit if alignment is not active
+      }
+  
+      // Constants for control (tune these values based on your robot's behavior)
+      double kPYaw = 0.02;      // Proportional constant for yaw alignment
+      double maxTurnSpeed = 0.2; // Maximum turning speed
+  
+      // Get Limelight's AprilTag data
+      double tx = limelight.getEntry("tx").getDouble(0.0); // Horizontal offset (degrees)
+      boolean hasTarget = limelight.getEntry("tv").getDouble(0.0) == 1.0;
+  
+      if (!hasTarget) {
+          // If no target is detected, stop the robot and exit alignment
+          System.out.println("No target detected! Exiting alignment.");
+          mecanumDrive.stopMotor();
+          isAligning = false; // Reset alignment state
+          return;
+      }
+  
+      // Print the detected target offset
+      System.out.println("Target detected. tx: " + tx);
+  
+      // Calculate yaw error
+      double yawError = tx; // Horizontal offset for yaw alignment
+      System.out.println("Yaw error: " + yawError);
+  
+      // Check if the robot is aligned
+      if (Math.abs(yawError) < 1.0) { // Stop if the robot is within yaw tolerance
+          mecanumDrive.stopMotor();
+          System.out.println("Alignment complete! Yaw error within tolerance.");
+          isAligning = false; // Reset alignment state
+          return;
+      }
+  
+      // Calculate control outputs for yaw
+      double turnSpeed = kPYaw * yawError;
+  
+      // Cap the turn speed
+      turnSpeed = Math.max(-maxTurnSpeed, Math.min(maxTurnSpeed, turnSpeed));
+      System.out.println("Calculated turn speed: " + turnSpeed);
+  
+      // Get the robot's current field-centric orientation
+      double robotHeading = gyro.getAngle(IMUAxis.kZ); // This method should return the robot's current heading in degrees
+      System.out.println("Robot heading (field-centric): " + robotHeading);
+  
+      // Use the robot's field-centric capabilities to point the crosshair at the target
+      mecanumDrive.driveCartesian(0, 0, -turnSpeed);
+      System.out.println("Driving to align with target. Turn speed: " + turnSpeed);
   }
-
-
-
-
-  @Override
-  public void testInit() {}
-
-
-
-  @Override
-  public void testPeriodic() {}
-
-
-
-  @Override
-  public void simulationInit() {}
-
-
-
-
-  @Override
-  public void simulationPeriodic() {}
-
-
-
+  
+    
+      
   }

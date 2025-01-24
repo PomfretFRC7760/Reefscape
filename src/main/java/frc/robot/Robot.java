@@ -118,6 +118,10 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
     new Pose2d(5.0, 13.5, new Rotation2d())
   );
   
+  private double lastKnownTx = 0.0;
+  private double lastKnownTy = 0.0;
+  private boolean hasLastKnownPosition = false;
+
   @Override
   public void robotInit() {
 
@@ -261,7 +265,10 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
       startAutoAlignWithAprilTag();
 
     }
-    autoAlignWithAprilTag();
+    if(isAligning) {
+      autoAlignWithAprilTag();
+      return;
+    }
   double gearRatio = 10.71; // Gearbox reduction ratio
   double wheelCircumference = Math.PI * 0.1524; // 6-inch wheels (in meters)
   double yawAngle = gyro.getAngle(IMUAxis.kZ);
@@ -516,11 +523,21 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
       }
   
       // Constants for control (tune these values based on your robot's behavior)
-      double kPYaw = 0.02;      // Proportional constant for yaw alignment
-      double maxTurnSpeed = 0.2; // Maximum turning speed
+      double kPYaw = 0.01;       // Proportional constant for yaw alignment
+      double kPLateral = 0.05;   // Proportional constant for lateral alignment
+      double kPOrientation = 0.005; // Proportional constant for orientation alignment
+      double maxTurnSpeed = 0.3;    // Maximum turning speed
+      double maxStrafeSpeed = 0.3;  // Maximum strafing speed
+      double minSpeed = 0.1;        // Minimum speed to prevent stalling
+  
+      // Deadband thresholds to prevent "dancing" when close to the target
+      double yawTolerance = 3.0;      // Degrees
+      double lateralTolerance = 0.1; // Meters
+      double orientationTolerance = 2.0; // Degrees
   
       // Get Limelight's AprilTag data
       double tx = limelight.getEntry("tx").getDouble(0.0); // Horizontal offset (degrees)
+      double ty = limelight.getEntry("ty").getDouble(0.0); // Vertical offset (degrees)
       boolean hasTarget = limelight.getEntry("tv").getDouble(0.0) == 1.0;
   
       if (!hasTarget) {
@@ -532,36 +549,83 @@ MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
       }
   
       // Print the detected target offset
-      System.out.println("Target detected. tx: " + tx);
+      System.out.println("Target detected. tx: " + tx + ", ty: " + ty);
   
-      // Calculate yaw error
+      // Calculate yaw error (horizontal misalignment)
       double yawError = tx; // Horizontal offset for yaw alignment
       System.out.println("Yaw error: " + yawError);
   
-      // Check if the robot is aligned
-      if (Math.abs(yawError) < 1.0) { // Stop if the robot is within yaw tolerance
-          mecanumDrive.stopMotor();
-          System.out.println("Alignment complete! Yaw error within tolerance.");
+      // Calculate lateral error using trigonometry
+      double lateralError = calculateLateralOffset(tx, ty); // Left/right strafe
+  
+      // Calculate orientation error (ensure the robot's heading stays at 0 degrees)
+      double currentHeading = gyro.getAngle(IMUAxis.kZ); // Current heading of the robot
+      double orientationError = -currentHeading; // Error from desired heading (0 degrees)
+      System.out.println("Orientation error: " + orientationError);
+  
+      // Check if the robot is aligned (includes heading)
+      if (Math.abs(yawError) < yawTolerance &&
+          Math.abs(lateralError) < lateralTolerance &&
+          Math.abs(orientationError) < orientationTolerance) {
+          mecanumDrive.stopMotor(); // Stop if the robot is within tolerance
+          System.out.println("Alignment complete! Errors within tolerance.");
           isAligning = false; // Reset alignment state
           return;
       }
   
-      // Calculate control outputs for yaw
-      double turnSpeed = kPYaw * yawError;
+      // Calculate control outputs with gradual slowdown
+      double turnSpeed = kPYaw * yawError;              // Control for yaw (rotation)
+      double strafeSpeed = kPLateral * lateralError;    // Control for lateral alignment
+      double orientationCorrection = kPOrientation * orientationError; // Control for maintaining heading
   
-      // Cap the turn speed
-      turnSpeed = Math.max(-maxTurnSpeed, Math.min(maxTurnSpeed, turnSpeed));
-      System.out.println("Calculated turn speed: " + turnSpeed);
+      // Scale speeds based on error to prevent "dancing" near the target
+      if (Math.abs(yawError) < yawTolerance * 2) {
+          turnSpeed *= 0.1; // Slow down turn speed near target
+      }
+      if (Math.abs(lateralError) < lateralTolerance * 2) {
+          strafeSpeed *= 0.1; // Slow down strafe speed near target
+      }
+      if (Math.abs(orientationError) < orientationTolerance * 2) {
+          orientationCorrection *= 0.1; // Slow down orientation correction near target
+      }
   
-      // Get the robot's current field-centric orientation
-      double robotHeading = gyro.getAngle(IMUAxis.kZ); // This method should return the robot's current heading in degrees
-      System.out.println("Robot heading (field-centric): " + robotHeading);
+      // Combine orientation correction with strafing and turning
+      double combinedTurnSpeed = turnSpeed + orientationCorrection;
   
-      // Use the robot's field-centric capabilities to point the crosshair at the target
-      mecanumDrive.driveCartesian(0, 0, -turnSpeed);
-      System.out.println("Driving to align with target. Turn speed: " + turnSpeed);
+      // Cap speeds to prevent overshooting
+      strafeSpeed = Math.max(-maxStrafeSpeed, Math.min(maxStrafeSpeed, -strafeSpeed)); // Note the negation here
+      combinedTurnSpeed = Math.max(-maxTurnSpeed, Math.min(maxTurnSpeed, combinedTurnSpeed));
+  
+      // Ensure minimum speed (prevent stalling)
+      if (Math.abs(strafeSpeed) < minSpeed && Math.abs(lateralError) >= lateralTolerance) {
+          strafeSpeed = Math.signum(strafeSpeed) * minSpeed;
+      }
+      if (Math.abs(combinedTurnSpeed) < minSpeed && Math.abs(yawError) >= yawTolerance) {
+          combinedTurnSpeed = Math.signum(combinedTurnSpeed) * minSpeed;
+      }
+  
+      // Drive the robot (adjusts strafe and turn simultaneously)
+      mecanumDrive.driveCartesian(0, strafeSpeed, -combinedTurnSpeed, Rotation2d.fromDegrees(0.0)); // Field-centric alignment disabled
+      System.out.println("Driving to align with target. Strafe speed: " + strafeSpeed + ", Combined turn speed: " + combinedTurnSpeed);
   }
   
-    
-      
+  // Method to calculate the lateral offset based on the horizontal offset (tx) and vertical offset (ty)
+  private double calculateLateralOffset(double tx, double ty) {
+      // Constants for the camera and target
+      double cameraHeight = 0.5; // Height of the camera from the ground (in meters)
+      double targetHeight = 2.0; // Height of the target from the ground (in meters)
+      double cameraAngle = 0; // Angle of the camera from the horizontal (in degrees)
+  
+      // Convert camera angle to radians
+      double cameraAngleRadians = Math.toRadians(cameraAngle);
+  
+      // Calculate the distance to the target using the vertical offset (ty)
+      double distanceToTarget = (targetHeight - cameraHeight) / Math.tan(cameraAngleRadians + Math.toRadians(ty));
+  
+      // Calculate the lateral offset using the horizontal offset (tx)
+      double lateralOffset = distanceToTarget * Math.sin(Math.toRadians(tx));
+  
+      return lateralOffset;
   }
+  
+}

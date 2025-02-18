@@ -1,0 +1,385 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.subsystems;
+
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.drive.MecanumDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.SparkClosedLoopController;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.DriveFeedforwards;
+
+public class CANDriveSubsystem extends SubsystemBase {
+    private final SparkFlex frontLeft;
+    private final SparkFlex frontRight;
+    private final SparkFlex rearLeft;
+    private final SparkFlex rearRight;
+
+    private final GyroSubsystem gyroSubsystem;
+
+    private final MecanumDrive mecanumDrive;
+    private final MecanumDriveOdometry odometry;
+
+    // Encoder direction multipliers (allows tuning in code)
+    private double frontLeftEncoderMultiplier = 1.0;
+    private double frontRightEncoderMultiplier = 1.0;
+    private double rearLeftEncoderMultiplier = 1.0;
+    private double rearRightEncoderMultiplier = 1.0;
+
+    private Rotation2d fieldCentricGyro;
+
+    // Robot dimensions (adjust to match your bot)
+    private static final double ROBOT_WIDTH = 0.560705;  // Meters
+    private static final double ROBOT_LENGTH = 0.4713986; // Meters
+    private static final double WHEEL_DIAMETER = 0.1524; // 6 inches in meters
+    private static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
+    private static final double GEAR_RATIO = 8.46; // 8.46:1 gearbox
+
+    private double poseAngle;
+
+    private final PIDController xController = new PIDController(1.0, 0, 0); // Adjust Gains
+    private final PIDController yController = new PIDController(1.0, 0, 0); // Adjust Gains
+    private final PIDController rotationController = new PIDController(1.0, 0, 0); // Adjust Gains
+    // Wheel positions for kinematics
+    private SparkClosedLoopController frontLeftController; 
+    private SparkClosedLoopController frontRightController;
+    private SparkClosedLoopController rearLeftController;
+    private SparkClosedLoopController rearRightController;
+
+    private SparkFlexConfig motorConfig;
+
+    public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, targetRPM;
+    private RobotConfig config;
+
+    private Field2d fieldMap;
+
+    private final MecanumDriveKinematics kinematics = new MecanumDriveKinematics(
+        new edu.wpi.first.math.geometry.Translation2d(ROBOT_LENGTH / 2, ROBOT_WIDTH / 2),  // Front Left
+        new edu.wpi.first.math.geometry.Translation2d(ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2), // Front Right
+        new edu.wpi.first.math.geometry.Translation2d(-ROBOT_LENGTH / 2, ROBOT_WIDTH / 2), // Rear Left
+        new edu.wpi.first.math.geometry.Translation2d(-ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2) // Rear Right
+    );
+
+    private Pose2d robotPose = new Pose2d();
+
+    public CANDriveSubsystem(GyroSubsystem gyroSubsystem) {
+        // Initialize motors
+        frontRight = new SparkFlex(2, MotorType.kBrushless);
+        rearRight = new SparkFlex(3, MotorType.kBrushless);
+        frontLeft = new SparkFlex(1, MotorType.kBrushless);
+        rearLeft = new SparkFlex(4, MotorType.kBrushless);
+        this.gyroSubsystem = gyroSubsystem;
+        poseAngle = gyroSubsystem.getGyroAngle();
+        mecanumDrive = new MecanumDrive(frontLeft, rearLeft, frontRight, rearRight);
+        mecanumDrive.setSafetyEnabled(false);
+        frontLeft.getEncoder().setPosition(0);
+        frontRight.getEncoder().setPosition(0);
+        rearLeft.getEncoder().setPosition(0);
+        rearRight.getEncoder().setPosition(0);
+        motorConfig = new SparkFlexConfig();
+        RobotConfig config;
+
+        fieldMap = new Field2d();
+
+        frontLeftController = frontLeft.getClosedLoopController();
+        frontRightController = frontRight.getClosedLoopController();
+        rearLeftController = rearLeft.getClosedLoopController();
+        rearRightController = rearRight.getClosedLoopController();
+
+        kP = 6e-5; 
+        kI = 0;
+        kD = 0; 
+        kIz = 0; 
+        kFF = 0.000015; 
+        kMaxOutput = 1; 
+        kMinOutput = -1;
+        maxRPM = 6784;
+
+        motorConfig.encoder
+        .positionConversionFactor(1)
+        .velocityConversionFactor(1);
+
+        motorConfig.closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        // Set PID values for position control. We don't need to pass a closed loop
+        // slot, as it will default to slot 0.
+        .p(kP)
+        .i(kI)
+        .d(kD)
+        .velocityFF(1.0 / maxRPM)
+        .outputRange(kMinOutput, kMaxOutput);
+
+        frontLeft.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        frontRight.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        rearLeft.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        rearRight.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        // Initialize odometry (assumes gyro angle is 0 at start)
+        MecanumDriveWheelPositions initialWheelPositions = new MecanumDriveWheelPositions(0, 0, 0, 0);
+        odometry = new MecanumDriveOdometry(kinematics, Rotation2d.fromDegrees(poseAngle), initialWheelPositions);
+
+        try{
+            config = RobotConfig.fromGUISettings();
+            AutoBuilder.configure(
+                this::getPose, // Robot pose supplier
+                this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+                this::getRobotRelativeSpeedsUnaccounted, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                (speeds, feedforwards) -> driveRobotRelativeUnaccounted(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                        new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                        new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+                ),
+                config, // The robot configuration
+                () -> {
+                  // Boolean supplier that controls when the path will be mirrored for the red alliance
+                  // This will flip the path being followed to the red side of the field.
+                  // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+    
+                  var alliance = DriverStation.getAlliance();
+                  if (alliance.isPresent()) {
+                    return alliance.get() == DriverStation.Alliance.Red;
+                  }
+                  return false;
+                },
+                this // Reference to this subsystem to set requirements
+        );
+            } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+            }
+    }
+
+    public void setupPathPlanner() {
+        
+    }
+
+    public void updateOdometry() {
+        // Read raw encoder positions (in rotations)
+        double frontLeftRotations = frontLeft.getEncoder().getPosition() * frontLeftEncoderMultiplier;
+        double frontRightRotations = frontRight.getEncoder().getPosition() * frontRightEncoderMultiplier;
+        double rearLeftRotations = rearLeft.getEncoder().getPosition() * rearLeftEncoderMultiplier;
+        double rearRightRotations = rearRight.getEncoder().getPosition() * rearRightEncoderMultiplier;
+    
+        // Convert motor rotations to wheel rotations (accounting for gear ratio)
+        double frontLeftDistance = (frontLeftRotations / GEAR_RATIO) * WHEEL_CIRCUMFERENCE;
+        double frontRightDistance = (frontRightRotations / GEAR_RATIO) * WHEEL_CIRCUMFERENCE;
+        double rearLeftDistance = (rearLeftRotations / GEAR_RATIO) * WHEEL_CIRCUMFERENCE;
+        double rearRightDistance = (rearRightRotations / GEAR_RATIO) * WHEEL_CIRCUMFERENCE;
+    
+        // Create a MecanumDriveWheelPositions object using the encoder distances
+        MecanumDriveWheelPositions wheelPositions = new MecanumDriveWheelPositions(
+            -frontLeftDistance, -rearLeftDistance, -frontRightDistance, -rearRightDistance
+        );
+    
+        poseAngle = gyroSubsystem.getGyroAngle();
+        robotPose = odometry.update(Rotation2d.fromDegrees(poseAngle), wheelPositions);
+    
+        // Publish values to SmartDashboard
+        SmartDashboard.putNumber("Front Left Encoder", frontLeftDistance);
+        SmartDashboard.putNumber("Front Right Encoder", frontRightDistance);
+        SmartDashboard.putNumber("Rear Left Encoder", rearLeftDistance);
+        SmartDashboard.putNumber("Rear Right Encoder", rearRightDistance);
+        SmartDashboard.putString("Robot Pose", robotPose.toString());
+        SmartDashboard.putNumber("Robot X Position", robotPose.getX());
+        SmartDashboard.putNumber("Robot Y Position", robotPose.getY());
+        SmartDashboard.putNumber("Front Left Velocity", -frontLeft.getEncoder().getVelocity());
+        SmartDashboard.putNumber("Front Right Velocity", -frontRight.getEncoder().getVelocity());
+        SmartDashboard.putNumber("Rear Left Velocity", -rearLeft.getEncoder().getVelocity());
+        SmartDashboard.putNumber("Rear Right Velocity", -rearRight.getEncoder().getVelocity());
+    }
+    
+    @Override
+    public void periodic() {
+        updateOdometry();
+        SmartDashboard.putString("Robot chassis speeds",getRobotRelativeSpeeds().toString());
+        fieldMap.setRobotPose(robotPose);
+        SmartDashboard.putData("Field", fieldMap);
+    }
+    
+    public void goToCoordinate(double targetX, double targetY, double targetHeading) {
+        while (true) {
+            updateOdometry(); // Update pose during movement
+    
+            // Get the current gyro-based angle
+            double currentAngle = gyroSubsystem.getGyroAngle();
+            
+            // Calculate speed using PID controllers
+            double xSpeed = xController.calculate(robotPose.getX(), targetX);
+            double ySpeed = yController.calculate(robotPose.getY(), targetY);
+            double rotationSpeed = rotationController.calculate(currentAngle, targetHeading);
+    
+            // Apply speed limits
+            double speedLimit = 0.1;
+            xSpeed = Math.max(-speedLimit, Math.min(speedLimit, xSpeed));
+            ySpeed = Math.max(-speedLimit, Math.min(speedLimit, ySpeed));
+            rotationSpeed = Math.max(-speedLimit, Math.min(speedLimit, rotationSpeed));
+    
+            // Use the same gyro reference as odometry
+            driveRobot(ySpeed, xSpeed, rotationSpeed);
+    
+            // Check if target position is reached
+            if (Math.abs(targetX - robotPose.getX()) < 0.05 &&
+                Math.abs(targetY - robotPose.getY()) < 0.05 &&
+                Math.abs(targetHeading - (currentAngle)) < 2) {
+                break;
+            }
+        }
+    
+        driveRobot(0, 0, 0); // Stop robot at target
+    }
+    
+    public void resetPose(Pose2d newPose) {
+        MecanumDriveWheelPositions initialWheelPositions = new MecanumDriveWheelPositions(0, 0, 0, 0);
+        gyroSubsystem.gyroReset();
+        gyroSubsystem.gyroCalibration();
+        poseAngle = gyroSubsystem.getGyroAngle();
+        odometry.resetPosition(Rotation2d.fromDegrees(poseAngle), initialWheelPositions, newPose);
+    }
+    public Pose2d getPose() {
+        return robotPose;
+    }
+
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        // Convert motor RPM to wheel linear velocity (m/s)
+        double frontLeftSpeed = (frontLeft.getEncoder().getVelocity() / (GEAR_RATIO * 60)) * WHEEL_CIRCUMFERENCE;
+        double frontRightSpeed = (frontRight.getEncoder().getVelocity() / (GEAR_RATIO * 60)) * WHEEL_CIRCUMFERENCE;
+        double rearLeftSpeed = (rearLeft.getEncoder().getVelocity() / (GEAR_RATIO * 60)) * WHEEL_CIRCUMFERENCE;
+        double rearRightSpeed = (rearRight.getEncoder().getVelocity() / (GEAR_RATIO * 60)) * WHEEL_CIRCUMFERENCE;
+    
+        // Create MecanumDriveWheelSpeeds with corrected wheel speeds
+        MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds(
+            -frontLeftSpeed, -frontRightSpeed, -rearLeftSpeed, -rearRightSpeed
+        );
+        poseAngle = gyroSubsystem.getGyroAngle();
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        // Convert to chassis speeds
+        ChassisSpeeds robotRelativeSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
+
+        return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, fieldCentricGyro);
+    }
+
+    public ChassisSpeeds getRobotRelativeSpeedsUnaccounted() {
+        // Convert motor RPM to wheel linear velocity (m/s)
+        double frontLeftSpeed = (frontLeft.getEncoder().getVelocity());
+        double frontRightSpeed = (frontRight.getEncoder().getVelocity());
+        double rearLeftSpeed = (rearLeft.getEncoder().getVelocity());
+        double rearRightSpeed = (rearRight.getEncoder().getVelocity());
+    
+        // Create MecanumDriveWheelSpeeds with corrected wheel speeds
+        MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds(
+            -frontLeftSpeed, -frontRightSpeed, -rearLeftSpeed, -rearRightSpeed
+        );
+        poseAngle = gyroSubsystem.getGyroAngle();
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        // Convert to chassis speeds
+        ChassisSpeeds robotRelativeSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
+
+        return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, fieldCentricGyro);
+    }
+    
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        // Get the robot's pose angle from the gyro
+        poseAngle = gyroSubsystem.getGyroAngle();
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        
+        // Convert the provided chassis speeds from field-relative to robot-relative
+        ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+            speeds.vxMetersPerSecond, 
+            speeds.vyMetersPerSecond, 
+            speeds.omegaRadiansPerSecond, 
+            fieldCentricGyro
+        );
+        
+        // Convert the robot-relative ChassisSpeeds to wheel speeds using kinematics
+        MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(robotRelativeSpeeds);
+        
+        // Apply gear ratio, invert all wheel speeds, and convert to RPM
+        frontLeftController.setReference((-wheelSpeeds.frontLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        frontRightController.setReference((-wheelSpeeds.frontRightMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        rearLeftController.setReference((-wheelSpeeds.rearLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        rearRightController.setReference((-wheelSpeeds.rearRightMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        
+        // Send data to SmartDashboard for debugging
+        SmartDashboard.putNumber("Front Left Setpoint RPM", (-wheelSpeeds.frontLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE * GEAR_RATIO)) * GEAR_RATIO);
+        SmartDashboard.putNumber("Front Right Setpoint RPM", (-wheelSpeeds.frontRightMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE * GEAR_RATIO)) * GEAR_RATIO);
+        SmartDashboard.putNumber("Rear Left Setpoint RPM", (-wheelSpeeds.rearLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE * GEAR_RATIO)) * GEAR_RATIO);
+        SmartDashboard.putNumber("Rear Right Setpoint RPM", (-wheelSpeeds.rearRightMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE * GEAR_RATIO)) * GEAR_RATIO);
+        
+        SmartDashboard.putNumber("Front Left Setpoint", -wheelSpeeds.frontLeftMetersPerSecond);
+        SmartDashboard.putNumber("Front Right Setpoint", -wheelSpeeds.frontRightMetersPerSecond);
+        SmartDashboard.putNumber("Rear Left Setpoint", -wheelSpeeds.rearLeftMetersPerSecond);
+        SmartDashboard.putNumber("Rear Right Setpoint", -wheelSpeeds.rearRightMetersPerSecond);
+    }
+
+    public void driveRobotRelativeUnaccounted(ChassisSpeeds speeds) {
+        // Get the robot's pose angle from the gyro
+        poseAngle = gyroSubsystem.getGyroAngle();
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        
+        // Convert the provided chassis speeds from field-relative to robot-relative
+        ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+            speeds.vxMetersPerSecond, 
+            speeds.vyMetersPerSecond, 
+            speeds.omegaRadiansPerSecond, 
+            fieldCentricGyro
+        );
+        
+        // Convert the robot-relative ChassisSpeeds to wheel speeds using kinematics
+        MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(robotRelativeSpeeds);
+        
+        // Apply gear ratio, invert all wheel speeds, and convert to RPM
+        frontLeftController.setReference((-wheelSpeeds.frontLeftMetersPerSecond) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        frontRightController.setReference((-wheelSpeeds.frontRightMetersPerSecond) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        rearLeftController.setReference((-wheelSpeeds.rearLeftMetersPerSecond) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        rearRightController.setReference((-wheelSpeeds.rearRightMetersPerSecond) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        
+        // Send data to SmartDashboard for debugging
+        SmartDashboard.putNumber("Front Left Setpoint RPM", (-wheelSpeeds.frontLeftMetersPerSecond) * GEAR_RATIO);
+        SmartDashboard.putNumber("Front Right Setpoint RPM", (-wheelSpeeds.frontRightMetersPerSecond) * GEAR_RATIO);
+        SmartDashboard.putNumber("Rear Left Setpoint RPM", (-wheelSpeeds.rearLeftMetersPerSecond) * GEAR_RATIO);
+        SmartDashboard.putNumber("Rear Right Setpoint RPM", (-wheelSpeeds.rearRightMetersPerSecond) * GEAR_RATIO);
+        
+        SmartDashboard.putNumber("Front Left Setpoint", -wheelSpeeds.frontLeftMetersPerSecond);
+        SmartDashboard.putNumber("Front Right Setpoint", -wheelSpeeds.frontRightMetersPerSecond);
+        SmartDashboard.putNumber("Rear Left Setpoint", -wheelSpeeds.rearLeftMetersPerSecond);
+        SmartDashboard.putNumber("Rear Right Setpoint", -wheelSpeeds.rearRightMetersPerSecond);
+    }
+    
+
+    // normal teleop drive
+    public void driveRobot(double ySpeed, double Xspeed, double zRotation) {
+        poseAngle = gyroSubsystem.getGyroAngle();
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        mecanumDrive.driveCartesian(ySpeed, Xspeed, zRotation, fieldCentricGyro);
+    }
+    
+
+}

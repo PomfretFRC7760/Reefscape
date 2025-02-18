@@ -4,49 +4,47 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+
 /**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants. This class should not be used for any other purpose. All constants should be declared
+ * The Constants class provides a convenient place for teams to hold robot-wide
+ * numerical or boolean
+ * constants. This class should not be used for any other purpose. All constants
+ * should be declared
  * globally (i.e. public static). Do not put anything functional in this class.
  *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
+ * <p>
+ * It is advised to statically import this class (or one of its inner classes)
+ * wherever the
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static class OperatorConstants {
-    // Port numbers for driver and operator gamepads. These correspond with the numbers on the USB
-    // tab of the DriverStation
-    public static final int kDriverControllerPort = 0;
-    public static final int kOperatorControllerPort = 1;
+
+  public static final class RollerConstants {
+    public static final int ROLLER_MOTOR_ID = 5;
+    public static final int ROLLER_MOTOR_CURRENT_LIMIT = 60;
+    public static final double ROLLER_MOTOR_VOLTAGE_COMP = 10;
+    public static final double ROLLER_EJECT_VALUE = 0.44;
   }
 
-  public static class DrivetrainConstants {
-    // PWM ports/CAN IDs for motor controllers
-    public static final int kLeftRearID = 1;
-    public static final int kLeftFrontID = 2;
-    public static final int kRightRearID = 3;
-    public static final int kRightFrontID = 4;
-
-    // Current limit for drivetrain motors
-    public static final int kCurrentLimit = 60;
+  public static final class OperatorConstants {
+    public static final int DRIVER_CONTROLLER_PORT = 0;
+    public static final int OPERATOR_CONTROLLER_PORT = 1;
   }
+  public static final class KinematicsConstants {
+    public static final double ROBOT_WIDTH = 0.6;  // Example: 60 cm
+    public static final double ROBOT_LENGTH = 0.6;
 
-  public static class LauncherConstants {
-    // PWM ports/CAN IDs for motor controllers
-    public static final int kFeederID = 5;
-    public static final int kLauncherID = 6;
+    // Define the locations of the wheels relative to the robot center
+    public static final Translation2d FRONT_LEFT_POSITION = new Translation2d(ROBOT_LENGTH / 2, ROBOT_WIDTH / 2);
+    public static final Translation2d FRONT_RIGHT_POSITION = new Translation2d(ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2);
+    public static final Translation2d BACK_LEFT_POSITION = new Translation2d(-ROBOT_LENGTH / 2, ROBOT_WIDTH / 2);
+    public static final Translation2d BACK_RIGHT_POSITION = new Translation2d(-ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2);
 
-    // Current limit for launcher and feed wheels
-    public static final int kLauncherCurrentLimit = 80;
-    public static final int kFeedCurrentLimit = 80;
-
-    // Speeds for wheels when intaking and launching. Intake speeds are negative to run the wheels
-    // in reverse
-    public static final double kLauncherSpeed = 1;
-    public static final double kLaunchFeederSpeed = 1;
-    public static final double kIntakeLauncherSpeed = -1;
-    public static final double kIntakeFeederSpeed = -.2;
-
-    public static final double kLauncherDelay = 1;
+    // Create kinematics object
+    public static final MecanumDriveKinematics KINEMATICS = new MecanumDriveKinematics(
+        FRONT_LEFT_POSITION, FRONT_RIGHT_POSITION, BACK_LEFT_POSITION, BACK_RIGHT_POSITION
+    );
   }
 }

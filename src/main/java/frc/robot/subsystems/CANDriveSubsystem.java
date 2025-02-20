@@ -375,10 +375,10 @@ public class CANDriveSubsystem extends SubsystemBase {
     
 
     // normal teleop drive
-    public void driveRobot(double ySpeed, double Xspeed, double zRotation) {
+    public void driveRobot(double ySpeed, double xSpeed, double zRotation) {
         poseAngle = gyroSubsystem.getGyroAngle();
         fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
-        mecanumDrive.driveCartesian(ySpeed, Xspeed, zRotation, fieldCentricGyro);
+        mecanumDrive.driveCartesian(ySpeed, xSpeed, zRotation, fieldCentricGyro);
     }
     
 

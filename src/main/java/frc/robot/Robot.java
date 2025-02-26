@@ -38,6 +38,7 @@ public class Robot extends TimedRobot {
 
     // Used to track usage of the KitBot code, please do not remove
     HAL.report(tResourceType.kResourceType_Framework, 9);
+  
   }
 
   /**

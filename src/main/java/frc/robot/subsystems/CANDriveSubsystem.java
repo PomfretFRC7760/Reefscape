@@ -148,11 +148,13 @@ public class CANDriveSubsystem extends SubsystemBase {
 
         try{
             config = RobotConfig.fromGUISettings();
+            Pose2d newPose = new Pose2d(2.0, 7.0, Rotation2d.fromDegrees(0.0));
+            resetPose(newPose);
             AutoBuilder.configure(
                 this::getPose, // Robot pose supplier
                 this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
-                this::getRobotRelativeSpeedsUnaccounted, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (speeds, feedforwards) -> driveRobotRelativeUnaccounted(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+                this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
                 new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
                         new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                         new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
@@ -279,7 +281,7 @@ public class CANDriveSubsystem extends SubsystemBase {
             -frontLeftSpeed, -frontRightSpeed, -rearLeftSpeed, -rearRightSpeed
         );
         poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
         // Convert to chassis speeds
         ChassisSpeeds robotRelativeSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
 
@@ -298,7 +300,7 @@ public class CANDriveSubsystem extends SubsystemBase {
             -frontLeftSpeed, -frontRightSpeed, -rearLeftSpeed, -rearRightSpeed
         );
         poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
         // Convert to chassis speeds
         ChassisSpeeds robotRelativeSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
 
@@ -308,7 +310,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     public void driveRobotRelative(ChassisSpeeds speeds) {
         // Get the robot's pose angle from the gyro
         poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
         
         // Convert the provided chassis speeds from field-relative to robot-relative
         ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -342,7 +344,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     public void driveRobotRelativeUnaccounted(ChassisSpeeds speeds) {
         // Get the robot's pose angle from the gyro
         poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
         
         // Convert the provided chassis speeds from field-relative to robot-relative
         ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -377,8 +379,8 @@ public class CANDriveSubsystem extends SubsystemBase {
     // normal teleop drive
     public void driveRobot(double ySpeed, double xSpeed, double zRotation) {
         poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle + 90);
-        mecanumDrive.driveCartesian(ySpeed, xSpeed, zRotation, fieldCentricGyro);
+        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
+        mecanumDrive.driveCartesian(-ySpeed, -xSpeed, zRotation, fieldCentricGyro);
     }
     
 

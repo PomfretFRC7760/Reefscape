@@ -53,7 +53,7 @@ public class LiftCommand extends Command {
         if (manualControlEnabled) {
             // Manual control mode
             double speed = rightStickY.getAsDouble();
-            liftSubsystem.manualControl(speed);
+            liftSubsystem.manualOverrideControl(speed);
         } else {
             // Preset mode
             boolean currentDPadUp = dPadUp.getAsBoolean();

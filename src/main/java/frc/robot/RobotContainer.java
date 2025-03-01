@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -31,6 +32,7 @@ import frc.robot.commands.LiftRotationCommand;
 import frc.robot.commands.LiftRollerCommand;
 import frc.robot.commands.CameraCommand;
 import frc.robot.subsystems.CameraSubsystem;
+import frc.robot.commands.UpperIntakeJettison;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -73,9 +75,7 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    NamedCommands.registerCommand("Lift Intake Jettison Coral", new LiftRotationCommand(liftIntakeRotationSubsystem, () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis(), () -> driverController.y().getAsBoolean()));
-    NamedCommands.registerCommand("Floor Intake Jettison Coral", new FloorRollerCommand(rollerSubsystem, () -> operatorController.a().getAsBoolean(), () -> operatorController.b().getAsBoolean(), () -> driverController.y().getAsBoolean(), () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis()));
-    // Set up command bindings
+    NamedCommands.registerCommand("Lift Intake Jettison Coral", new UpperIntakeJettison(liftIntakeRollerSubsystem));
     configureBindings();
 
     // Set the options to show up in the Dashboard for selecting auto modes. If you
@@ -140,15 +140,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    try{
-        // Load the path you want to follow using its name in the GUI
-        PathPlannerPath path = PathPlannerPath.fromPathFile("New Path");
-
-        // Create a path following command using AutoBuilder. This will also trigger event markers.
-        return AutoBuilder.followPath(path);
-    } catch (Exception e) {
-        DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-        return Commands.none();
-    }
+    return new PathPlannerAuto("TestAuto");
   }
 }

@@ -98,9 +98,9 @@ public class LiftSubsystem extends SubsystemBase {
         leftLiftEncoder.setPosition(0);
         rightLiftEncoder.setPosition(0);
     }
-    public void testMotor() {
-        leftLiftMotor.set(0.1);
-        rightLiftMotor.set(0.1);
+    public void manualControl(double speed) {
+        leftLiftMotor.set(speed/3);
+        rightLiftMotor.set(speed/3);
 
     }
 }

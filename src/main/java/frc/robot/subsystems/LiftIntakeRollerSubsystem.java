@@ -23,22 +23,22 @@ public class LiftIntakeRollerSubsystem extends SubsystemBase {
 
   /** This is a method that makes the roller spin */
   public void runRollerIntake() {
-    motor.set( -0.55);
+    motor.set(-0.5);
   }
   public void stallRoller() {
-    motor.set( 0.10);
+    motor.set( -0.30);
   }
   public void runRollerJettison() {
-    motor.set( -0.5);
+    motor.set( 0.5);
   }
   public void stopRoller() {
     motor.set( 0);
   }
   public void manualControlJettison(double rightTrigger) {
-    motor.set(rightTrigger);
+    motor.set(rightTrigger/2);
 }
   public void manualControlIntake(double leftTrigger) {
-    motor.set(leftTrigger);
+    motor.set(-leftTrigger/2);
   }
 
 }

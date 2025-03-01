@@ -25,16 +25,29 @@ public class LiftRollerCommand extends Command {
 
   @Override
   public void initialize() {
-    if (shouldIntake.getAsBoolean() && shouldJettison.getAsBoolean()) {
-      rollerSubsystem.stallRoller();
+    if (!manualOverride.getAsBoolean()) {
+      if (shouldIntake.getAsBoolean() && shouldJettison.getAsBoolean()) {
+        rollerSubsystem.stallRoller();
+      }
+      else if (shouldIntake.getAsBoolean()) {
+        rollerSubsystem.runRollerIntake();
+      }
+      else if (shouldJettison.getAsBoolean()) {
+        rollerSubsystem.runRollerJettison();
+      } else {
+        rollerSubsystem.stopRoller();
+      }
     }
-    else if (shouldIntake.getAsBoolean()) {
-      rollerSubsystem.runRollerIntake();
-    }
-    else if (shouldJettison.getAsBoolean()) {
-      rollerSubsystem.runRollerJettison();
-    } else {
-      rollerSubsystem.stopRoller();
+    else {
+      if (leftTrigger.getAsDouble() > 0 && rightTrigger.getAsDouble() > 0) {
+  
+      }
+      else if (leftTrigger.getAsDouble() > 0) {
+          rollerSubsystem.manualControlIntake(leftTrigger.getAsDouble());
+      }
+      else if (rightTrigger.getAsDouble() > 0) {
+        rollerSubsystem.manualControlJettison(rightTrigger.getAsDouble());
+      }
     }
   }
 

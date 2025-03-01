@@ -69,7 +69,6 @@ public class CANDriveSubsystem extends SubsystemBase {
     private final PIDController xController = new PIDController(1.0, 0, 0); // Adjust Gains
     private final PIDController yController = new PIDController(1.0, 0, 0); // Adjust Gains
     private final PIDController rotationController = new PIDController(1.0, 0, 0); // Adjust Gains
-    // Wheel positions for kinematics
     private SparkClosedLoopController frontLeftController; 
     private SparkClosedLoopController frontRightController;
     private SparkClosedLoopController rearLeftController;

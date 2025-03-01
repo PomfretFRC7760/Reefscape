@@ -5,25 +5,30 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.Constants.RollerConstants;
 import frc.robot.commands.AutoCommand;
 import frc.robot.commands.DriveCommand;
-import frc.robot.commands.RollerCommand;
+import frc.robot.commands.FloorRollerCommand;
 import frc.robot.commands.GyroCommand;
 import frc.robot.subsystems.CANDriveSubsystem;
 import frc.robot.subsystems.GyroSubsystem;
-import frc.robot.subsystems.CANRollerSubsystem;
+import frc.robot.subsystems.LiftIntakeRollerSubsystem;
+import frc.robot.subsystems.FloorIntakeRollerSubsystem;
+import frc.robot.subsystems.LiftSubsystem;
+import frc.robot.commands.LiftCommand;
+import frc.robot.subsystems.FloorIntakeRotationSubsystem;
+import frc.robot.commands.FloorRotationCommand;
+import frc.robot.subsystems.LiftIntakeRotationSubsystem;
+import frc.robot.commands.LiftRotationCommand;
+import frc.robot.commands.LiftRollerCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -37,19 +42,26 @@ import frc.robot.subsystems.CANRollerSubsystem;
 public class RobotContainer {
   // The robot's subsystems
 
-  private final CANRollerSubsystem rollerSubsystem = new CANRollerSubsystem();
+  private final FloorIntakeRollerSubsystem rollerSubsystem = new FloorIntakeRollerSubsystem();
   private final GyroSubsystem gyroSubsystem = new GyroSubsystem();
   
   private final CANDriveSubsystem driveSubsystem = new CANDriveSubsystem(gyroSubsystem);
+  private final LiftSubsystem liftSubsystem = new LiftSubsystem();
+
+  private final FloorIntakeRotationSubsystem floorIntakeRotationSubsystem = new FloorIntakeRotationSubsystem();
+
+  private final LiftIntakeRotationSubsystem liftIntakeRotationSubsystem = new LiftIntakeRotationSubsystem();
+
+  private final LiftIntakeRollerSubsystem liftIntakeRollerSubsystem = new LiftIntakeRollerSubsystem();
   
 
   // The driver's controller
   private final CommandXboxController driverController = new CommandXboxController(
-      OperatorConstants.DRIVER_CONTROLLER_PORT);
+      0);
 
   // The operator's controller
   private final CommandXboxController operatorController = new CommandXboxController(
-      OperatorConstants.OPERATOR_CONTROLLER_PORT);
+      1);
 
   // The autonomous chooser
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
@@ -58,6 +70,8 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    NamedCommands.registerCommand("Lift Intake Jettison Coral", new LiftRotationCommand(liftIntakeRotationSubsystem, () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis(), () -> driverController.y().getAsBoolean()));
+    NamedCommands.registerCommand("Floor Intake Jettison Coral", new FloorRollerCommand(rollerSubsystem, () -> operatorController.a().getAsBoolean(), () -> operatorController.b().getAsBoolean(), () -> driverController.y().getAsBoolean(), () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis()));
     // Set up command bindings
     configureBindings();
 
@@ -87,8 +101,11 @@ public class RobotContainer {
     // value ejecting the gamepiece while the button is held
 
     // before
-    operatorController.a()
-        .whileTrue(new RollerCommand(() -> RollerConstants.ROLLER_EJECT_VALUE, () -> 0, rollerSubsystem));
+
+    
+      
+    
+  
 
     // Set the default command for the drive subsystem to an instance of the
     // DriveCommand with the values provided by the joystick axes on the driver
@@ -104,11 +121,12 @@ public class RobotContainer {
     // Set the default command for the roller subsystem to an instance of
     // RollerCommand with the values provided by the triggers on the operator
     // controller
-    rollerSubsystem.setDefaultCommand(new RollerCommand(
-        () -> operatorController.getRightTriggerAxis(),
-        () -> operatorController.getLeftTriggerAxis(),
-        rollerSubsystem));
     gyroSubsystem.setDefaultCommand(new GyroCommand(() -> driverController.x().getAsBoolean(), gyroSubsystem));
+    liftSubsystem.setDefaultCommand(new LiftCommand(() -> operatorController.povUp().getAsBoolean(), () -> operatorController.povDown().getAsBoolean(), () -> operatorController.povLeft().getAsBoolean(), () -> operatorController.povRight().getAsBoolean(), liftSubsystem));
+    rollerSubsystem.setDefaultCommand(new FloorRollerCommand(rollerSubsystem, () -> operatorController.a().getAsBoolean(), () -> operatorController.b().getAsBoolean(), () -> driverController.y().getAsBoolean(), () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis()));
+    floorIntakeRotationSubsystem.setDefaultCommand(new FloorRotationCommand(floorIntakeRotationSubsystem, () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis(), () -> driverController.y().getAsBoolean()));
+    liftIntakeRotationSubsystem.setDefaultCommand(new LiftRotationCommand(liftIntakeRotationSubsystem, () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis(), () -> driverController.y().getAsBoolean()));
+    liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean(), () -> operatorController.y().getAsBoolean(), () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
   }
 
   /**

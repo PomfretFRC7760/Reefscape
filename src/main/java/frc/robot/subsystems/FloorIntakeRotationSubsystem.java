@@ -5,6 +5,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
 
 public class FloorIntakeRotationSubsystem extends SubsystemBase {
     private final VictorSPX motor;
@@ -23,9 +24,15 @@ public class FloorIntakeRotationSubsystem extends SubsystemBase {
         if (limitSwitch.get()) {
             motor.set(ControlMode.PercentOutput, Speed/2); // Run motor in reverse
         }
-
     }
+
     public boolean getLimitSwitchPosition() {
         return limitSwitch.get();
+    }
+
+    public void autoPosition() {
+        motor.set(ControlMode.PercentOutput, -0.30);
+        Timer.delay(0.65);
+        motor.set(ControlMode.PercentOutput, 0);
     }
 }

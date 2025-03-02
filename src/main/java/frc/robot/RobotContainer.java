@@ -11,6 +11,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -33,6 +34,8 @@ import frc.robot.commands.LiftRollerCommand;
 import frc.robot.commands.CameraCommand;
 import frc.robot.subsystems.CameraSubsystem;
 import frc.robot.commands.UpperIntakeJettison;
+import frc.robot.commands.FloorIntakeJettison;
+import frc.robot.commands.FloorIntakePosition;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -69,20 +72,23 @@ public class RobotContainer {
       1);
 
   // The autonomous chooser
-  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  private final SendableChooser<Command> autoChooser;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    NamedCommands.registerCommand("Lift Intake Jettison Coral", new UpperIntakeJettison(liftIntakeRollerSubsystem));
+    NamedCommands.registerCommand("Floor Intake Position", new FloorIntakePosition(floorIntakeRotationSubsystem));
+    NamedCommands.registerCommand("Lift Intake Jettison Coral", new FloorIntakeJettison(rollerSubsystem));
+    NamedCommands.registerCommand("Floor Intake Jettison Coral", new FloorIntakeJettison(rollerSubsystem));
     configureBindings();
 
     // Set the options to show up in the Dashboard for selecting auto modes. If you
     // add additional auto modes you can add additional lines here with
     // autoChooser.addOption
 
-    autoChooser.setDefaultOption("Autonomous", new AutoCommand(driveSubsystem, 1, 0, 0));
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   /**
@@ -140,6 +146,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return new PathPlannerAuto("TestAuto");
+    return autoChooser.getSelected();
   }
 }

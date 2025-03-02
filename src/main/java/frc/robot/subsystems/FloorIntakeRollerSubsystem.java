@@ -3,7 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
-
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
@@ -11,6 +11,7 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 public class FloorIntakeRollerSubsystem extends SubsystemBase {
   private final VictorSPX leftRollerMotor;
   private final VictorSPX rightRollerMotor;
+  private final Timer timer = new Timer();
 
   public FloorIntakeRollerSubsystem() {
     // Set up the roller motor as a brushed motor
@@ -46,5 +47,18 @@ public class FloorIntakeRollerSubsystem extends SubsystemBase {
   public void manualControlIntake(double leftTrigger) {
     leftRollerMotor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, leftTrigger);
     rightRollerMotor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, leftTrigger);
+}
+public void autoJettison() {
+  leftRollerMotor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, -1);
+  rightRollerMotor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, -1);
+  timer.reset();
+  timer.start();
+  while (timer.get() < 2.0) {
+    // Wait for 2 seconds
+  }
+  leftRollerMotor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, 0);
+  rightRollerMotor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, 0);
+  timer.stop();
+  System.out.println("floor jettison command received");
 }
 }

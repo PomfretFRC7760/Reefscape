@@ -92,7 +92,7 @@ public class LiftCommand extends Command {
             } else if (currentPreset == 4) {
                 liftSubsystem.setLiftPosition(40);
             } else if (currentPreset == 5) {
-                liftSubsystem.setLiftPosition(50);
+                liftSubsystem.setLiftPosition(53);
             }
             liftSubsystem.updatePosition();
             // Update the previous states

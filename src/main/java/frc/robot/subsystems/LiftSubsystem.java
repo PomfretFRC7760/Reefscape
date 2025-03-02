@@ -99,8 +99,8 @@ public class LiftSubsystem extends SubsystemBase {
         rightLiftEncoder.setPosition(0);
     }
     public void manualOverrideControl(double speed) {
-        leftLiftMotor.set(speed/3);
-        rightLiftMotor.set(speed/3);
+        leftLiftMotor.set(-speed/2);
+        rightLiftMotor.set(-speed/2);
 
     }
 }

@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -66,9 +65,6 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     private double poseAngle;
 
-    private final PIDController xController = new PIDController(1.0, 0, 0); // Adjust Gains
-    private final PIDController yController = new PIDController(1.0, 0, 0); // Adjust Gains
-    private final PIDController rotationController = new PIDController(1.0, 0, 0); // Adjust Gains
     private SparkClosedLoopController frontLeftController; 
     private SparkClosedLoopController frontRightController;
     private SparkClosedLoopController rearLeftController;
@@ -223,38 +219,6 @@ public class CANDriveSubsystem extends SubsystemBase {
         SmartDashboard.putString("Robot chassis speeds",getRobotRelativeSpeeds().toString());
         fieldMap.setRobotPose(robotPose);
         SmartDashboard.putData("Field", fieldMap);
-    }
-    
-    public void goToCoordinate(double targetX, double targetY, double targetHeading) {
-        while (true) {
-            updateOdometry(); // Update pose during movement
-    
-            // Get the current gyro-based angle
-            double currentAngle = gyroSubsystem.getGyroAngle();
-            
-            // Calculate speed using PID controllers
-            double xSpeed = xController.calculate(robotPose.getX(), targetX);
-            double ySpeed = yController.calculate(robotPose.getY(), targetY);
-            double rotationSpeed = rotationController.calculate(currentAngle, targetHeading);
-    
-            // Apply speed limits
-            double speedLimit = 0.1;
-            xSpeed = Math.max(-speedLimit, Math.min(speedLimit, xSpeed));
-            ySpeed = Math.max(-speedLimit, Math.min(speedLimit, ySpeed));
-            rotationSpeed = Math.max(-speedLimit, Math.min(speedLimit, rotationSpeed));
-    
-            // Use the same gyro reference as odometry
-            driveRobot(ySpeed, xSpeed, rotationSpeed);
-    
-            // Check if target position is reached
-            if (Math.abs(targetX - robotPose.getX()) < 0.05 &&
-                Math.abs(targetY - robotPose.getY()) < 0.05 &&
-                Math.abs(targetHeading - (currentAngle)) < 2) {
-                break;
-            }
-        }
-    
-        driveRobot(0, 0, 0); // Stop robot at target
     }
     
     public void resetPose(Pose2d newPose) {

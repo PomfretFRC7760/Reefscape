@@ -13,10 +13,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.AutoCommand;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.FloorRollerCommand;
 import frc.robot.commands.GyroCommand;
@@ -79,7 +77,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     NamedCommands.registerCommand("Floor Intake Position", new FloorIntakePosition(floorIntakeRotationSubsystem));
-    NamedCommands.registerCommand("Lift Intake Jettison Coral", new FloorIntakeJettison(rollerSubsystem));
+    NamedCommands.registerCommand("Lift Intake Jettison Coral", new UpperIntakeJettison(liftIntakeRollerSubsystem));
     NamedCommands.registerCommand("Floor Intake Jettison Coral", new FloorIntakeJettison(rollerSubsystem));
     configureBindings();
 

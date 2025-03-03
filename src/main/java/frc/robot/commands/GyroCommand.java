@@ -16,7 +16,8 @@ public class GyroCommand extends Command {
     }
     @Override
   public void initialize() {
-    
+    gyroSubsystem.gyroCalibration();  
+    gyroSubsystem.gyroReset();
   }
   @Override
   public void execute() {

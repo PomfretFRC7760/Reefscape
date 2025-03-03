@@ -28,7 +28,7 @@ public class GyroCommand extends Command {
 
       // 0.5 seconds hold, might make longer if i still manage to accidentally reset it
       if (isButtonPressed && (System.currentTimeMillis() - buttonPressStartTime >= 500)) {
-        gyroSubsystem.gyroCalibration();  
+        //gyroSubsystem.gyroCalibration();  
         gyroSubsystem.gyroReset();
           isButtonPressed = false; 
       }

@@ -223,8 +223,8 @@ public class CANDriveSubsystem extends SubsystemBase {
     
     public void resetPose(Pose2d newPose) {
         MecanumDriveWheelPositions initialWheelPositions = new MecanumDriveWheelPositions(0, 0, 0, 0);
-        gyroSubsystem.gyroReset();
-        gyroSubsystem.gyroCalibration();
+        //gyroSubsystem.gyroReset();
+        //gyroSubsystem.gyroCalibration();
         poseAngle = gyroSubsystem.getGyroAngle();
         odometry.resetPosition(Rotation2d.fromDegrees(poseAngle), initialWheelPositions, newPose);
     }
@@ -346,5 +346,8 @@ public class CANDriveSubsystem extends SubsystemBase {
         mecanumDrive.driveCartesian(-ySpeed, -xSpeed, zRotation, fieldCentricGyro);
     }
     
+    public void driveRobotCentric(double ySpeed, double xSpeed, double zRotation) {
+        mecanumDrive.driveCartesian(-ySpeed, -xSpeed, zRotation);
+    }
 
 }

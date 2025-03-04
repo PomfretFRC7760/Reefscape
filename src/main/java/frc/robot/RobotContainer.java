@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.function.BooleanSupplier;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -34,6 +36,7 @@ import frc.robot.subsystems.CameraSubsystem;
 import frc.robot.commands.UpperIntakeJettison;
 import frc.robot.commands.FloorIntakeJettison;
 import frc.robot.commands.FloorIntakePosition;
+import frc.robot.commands.AutoAlign; 
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -135,6 +138,10 @@ public class RobotContainer {
     liftIntakeRotationSubsystem.setDefaultCommand(new LiftRotationCommand(liftIntakeRotationSubsystem, () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis(), () -> driverController.y().getAsBoolean()));
     liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean(), () -> operatorController.y().getAsBoolean(), () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
     cameraSubsystem.setDefaultCommand(new CameraCommand(() -> operatorController.x().getAsBoolean(), cameraSubsystem));
+    BooleanSupplier povDownPressed = () -> driverController.povDown().getAsBoolean();
+        
+    Trigger povDownTrigger = new Trigger(povDownPressed);
+    povDownTrigger.whileTrue(new AutoAlign(driveSubsystem, povDownPressed));
   }
 
   /**

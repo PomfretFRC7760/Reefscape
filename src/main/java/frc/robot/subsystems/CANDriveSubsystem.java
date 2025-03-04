@@ -350,4 +350,8 @@ public class CANDriveSubsystem extends SubsystemBase {
         mecanumDrive.driveCartesian(-ySpeed, -xSpeed, zRotation);
     }
 
+    public double getGyroAngle() {
+        return gyroSubsystem.getGyroAngle();
+    }
+
 }

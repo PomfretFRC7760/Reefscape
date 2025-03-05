@@ -56,48 +56,44 @@ public class LiftCommand extends Command {
             liftSubsystem.manualOverrideControl(speed);
         } else {
             // Preset mode
-            boolean currentDPadUp = dPadUp.getAsBoolean();
-            boolean currentDPadDown = dPadDown.getAsBoolean();
+            // boolean currentDPadUp = dPadUp.getAsBoolean();
+            // boolean currentDPadDown = dPadDown.getAsBoolean();
         
             // Check if dPadUp switches from false to true
-            if (currentDPadUp && !previousDPadUp) {
-                if (currentPreset >= 0 && currentPreset < 4) {
-                    currentPreset++;
-                }
-            }
-        
-            // Check if dPadDown switches from false to true
-            if (currentDPadDown && !previousDPadDown) {
-                if (currentPreset > 0 && currentPreset <= 5) {
-                    currentPreset--;
-                }
-            }
-
-            if (dPadLeft.getAsBoolean()) {
+            if (dPadDown.getAsBoolean()) {
                 currentPreset = 0;
             }
 
-            if (dPadRight.getAsBoolean()) {
-                currentPreset = 5;
+            // else if (dPadDown.getAsBoolean()) {
+            //     currentPreset = 3;
+            // }
+
+            else if (dPadLeft.getAsBoolean()) {
+                currentPreset = 1;
+            }
+
+            else if (dPadRight.getAsBoolean()) {
+                currentPreset = 2;
             }
         
             if (currentPreset == 0) {
                 liftSubsystem.setLiftPosition(0.1);
             } else if (currentPreset == 1) {
-                liftSubsystem.setLiftPosition(10);
+                liftSubsystem.setLiftPosition(21.5);
             } else if (currentPreset == 2) {
-                liftSubsystem.setLiftPosition(20);
-            } else if (currentPreset == 3) {
-                liftSubsystem.setLiftPosition(30);
-            } else if (currentPreset == 4) {
-                liftSubsystem.setLiftPosition(40);
-            } else if (currentPreset == 5) {
                 liftSubsystem.setLiftPosition(53);
             }
+            // } else if (currentPreset == 3) {
+            //     liftSubsystem.setLiftPosition(30);
+            // } else if (currentPreset == 4) {
+            //     liftSubsystem.setLiftPosition(40);
+            // } else if (currentPreset == 5) {
+            //     liftSubsystem.setLiftPosition(53);
+            // }
             liftSubsystem.updatePosition();
             // Update the previous states
-            previousDPadUp = currentDPadUp;
-            previousDPadDown = currentDPadDown;
+            // previousDPadUp = currentDPadUp;
+            // previousDPadDown = currentDPadDown;
         }
         
         // Update the SmartDashboard

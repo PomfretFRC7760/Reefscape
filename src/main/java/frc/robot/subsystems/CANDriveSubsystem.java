@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -14,6 +16,8 @@ import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -37,11 +41,18 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.VecBuilder;
+
 public class CANDriveSubsystem extends SubsystemBase {
     private final SparkFlex frontLeft;
     private final SparkFlex frontRight;
     private final SparkFlex rearLeft;
     private final SparkFlex rearRight;
+
+    private final MecanumDrivePoseEstimator mecanumDrivePoseEstimator;
 
     private final GyroSubsystem gyroSubsystem;
 
@@ -103,6 +114,9 @@ public class CANDriveSubsystem extends SubsystemBase {
         motorConfig = new SparkFlexConfig();
         RobotConfig config;
 
+        Matrix<N3, N1> initialStateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
+        Matrix<N3, N1> initialVisionMeasurementStdDevs = VecBuilder.fill(0.45, 0.45, 0.45);
+
         fieldMap = new Field2d();
 
         frontLeftController = frontLeft.getClosedLoopController();
@@ -140,6 +154,8 @@ public class CANDriveSubsystem extends SubsystemBase {
         // Initialize odometry (assumes gyro angle is 0 at start)
         MecanumDriveWheelPositions initialWheelPositions = new MecanumDriveWheelPositions(0, 0, 0, 0);
         odometry = new MecanumDriveOdometry(kinematics, Rotation2d.fromDegrees(poseAngle), initialWheelPositions);
+
+        mecanumDrivePoseEstimator = new MecanumDrivePoseEstimator(kinematics, Rotation2d.fromDegrees(poseAngle), initialWheelPositions, robotPose, initialStateStdDevs, initialVisionMeasurementStdDevs);
 
         try{
             config = RobotConfig.fromGUISettings();
@@ -352,6 +368,10 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     public double getGyroAngle() {
         return gyroSubsystem.getGyroAngle();
+    }
+
+    public double getRotationSpeed() {
+        return gyroSubsystem.getRotationSpeed();
     }
 
 }

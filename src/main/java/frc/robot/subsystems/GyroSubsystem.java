@@ -22,4 +22,9 @@ public double getGyroAngle() {
     SmartDashboard.putNumber("Gyro angle", yawAngle);
     return yawAngle;
 }
+
+public double getRotationSpeed() {
+    double rate = gyro.getRate();
+    return rate;
+}
 }

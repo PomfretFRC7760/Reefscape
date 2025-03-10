@@ -15,4 +15,5 @@
     - [ ] Locate and drive to algae with neural processing (might not be added, singular limelight currently facing wrong way for this)
     - [ ] Intuitive control interface for semi autonomous (Smartdashboard sendablechoosers?)
     - [ ] Limelight pipeline switching (we only have one limelight and have to make the most of it)
+    - [ ] Manual drive override (if semi auto ever craps the bed)
 - [ ] PID tuning and position control for lift and intakes

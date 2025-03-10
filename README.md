@@ -19,3 +19,4 @@
     - [ ] Manual drive override (if semi auto ever craps the bed)
 - [ ] PID tuning and position control for lift and intakes
 - [ ] More commands for lift and intakes for autonomous
+- [ ] Rework subsystems to account for recent hardware design changes

@@ -17,3 +17,4 @@
     - [ ] Limelight pipeline switching (we only have one limelight and have to make the most of it)
     - [ ] Manual drive override (if semi auto ever craps the bed)
 - [ ] PID tuning and position control for lift and intakes
+- [ ] More commands for lift and intakes for autonomous

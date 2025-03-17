@@ -1,7 +1,6 @@
 //thanks to team 5410 for this code
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import java.util.Optional;
 
@@ -11,7 +10,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.LimelightHelpers;
-import frc.robot.subsystems.CANDriveSubsystem;
 
 
 public class LimeLocalizationSubsystem {

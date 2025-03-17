@@ -373,5 +373,4 @@ public class CANDriveSubsystem extends SubsystemBase {
     public double getRotationSpeed() {
         return gyroSubsystem.getRotationSpeed();
     }
-
 }

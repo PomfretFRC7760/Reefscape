@@ -11,9 +11,11 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -37,8 +39,9 @@ import frc.robot.subsystems.CameraSubsystem;
 import frc.robot.commands.UpperIntakeJettison;
 import frc.robot.commands.FloorIntakeJettison;
 import frc.robot.commands.FloorIntakePosition;
-//import frc.robot.commands.AutoAlign; 
+import frc.robot.commands.LimelightPoseReset; 
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.util.LocationChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -55,7 +58,7 @@ public class RobotContainer {
   private final FloorIntakeRollerSubsystem rollerSubsystem = new FloorIntakeRollerSubsystem();
   private final GyroSubsystem gyroSubsystem = new GyroSubsystem();
   
-  private final CANDriveSubsystem driveSubsystem = new CANDriveSubsystem(gyroSubsystem);
+  public final CANDriveSubsystem driveSubsystem = new CANDriveSubsystem(gyroSubsystem);
   private final LiftSubsystem liftSubsystem = new LiftSubsystem();
 
   private final FloorIntakeRotationSubsystem floorIntakeRotationSubsystem = new FloorIntakeRotationSubsystem();
@@ -65,6 +68,11 @@ public class RobotContainer {
   private final LiftIntakeRollerSubsystem liftIntakeRollerSubsystem = new LiftIntakeRollerSubsystem();
   private final CameraSubsystem cameraSubsystem = new CameraSubsystem();
   private final VisionSubsystem visionSubsystem = new VisionSubsystem(driveSubsystem);
+
+  private final DriveCommand driveCommand;
+
+
+  private final LocationChooser locationChooser = new LocationChooser(this);
   
 
   // The driver's controller
@@ -78,6 +86,8 @@ public class RobotContainer {
   // The autonomous chooser
   private final SendableChooser<Command> autoChooser;
 
+  private Pose2d lastSelectedPose = null;
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -86,6 +96,19 @@ public class RobotContainer {
     NamedCommands.registerCommand("Lift Intake Jettison Coral", new UpperIntakeJettison(liftIntakeRollerSubsystem));
     NamedCommands.registerCommand("Floor Intake Jettison Coral", new FloorIntakeJettison(rollerSubsystem));
     configureBindings();
+
+    driveCommand = new DriveCommand(
+        () -> -driverController.getLeftY(),
+        () -> driverController.getLeftX(),
+        () -> -driverController.getRightX(),
+        () -> driverController.povUp().getAsBoolean(),
+        driveSubsystem,
+        locationChooser
+    );
+    driveSubsystem.setDefaultCommand(driveCommand);
+
+    //SmartDashboard.putData("Drive to Selected Pose", new InstantCommand(driveCommand::driveToSelectedPose));
+
 
     
 
@@ -128,10 +151,6 @@ public class RobotContainer {
     // stick away from you (a negative value) drives the robot forwards (a positive
     // value). Similarly for the X axis where we need to flip the value so the
     // joystick matches the WPILib convention of counter-clockwise positive
-    driveSubsystem.setDefaultCommand(new DriveCommand(
-() -> -driverController.getLeftY(), () -> driverController.getLeftX(),
-        () -> -driverController.getRightX(), () -> driverController.povUp().getAsBoolean(),
-        driveSubsystem, visionSubsystem));
 
     // Set the default command for the roller subsystem to an instance of
     // RollerCommand with the values provided by the triggers on the operator
@@ -143,11 +162,21 @@ public class RobotContainer {
     liftIntakeRotationSubsystem.setDefaultCommand(new LiftRotationCommand(liftIntakeRotationSubsystem, () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis(), () -> driverController.y().getAsBoolean()));
     liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean(), () -> operatorController.y().getAsBoolean(), () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
     cameraSubsystem.setDefaultCommand(new CameraCommand(() -> operatorController.x().getAsBoolean(), cameraSubsystem));
-    //BooleanSupplier povDownPressed = () -> driverController.povDown().getAsBoolean();
+    BooleanSupplier povDownPressed = () -> driverController.povDown().getAsBoolean();
         
-    //Trigger povDownTrigger = new Trigger(povDownPressed);
-    //povDownTrigger.whileTrue(new AutoAlign(driveSubsystem, povDownPressed));
+    Trigger povDownTrigger = new Trigger(povDownPressed);
+    povDownTrigger.whileTrue(new LimelightPoseReset(povDownPressed, driveSubsystem, visionSubsystem));
   }
+
+  public void updateSelectedPose() {
+    Pose2d currentPose = locationChooser.selectCoralStation(); // Get current selection
+
+    if (currentPose != null && !currentPose.equals(lastSelectedPose)) {
+        lastSelectedPose = currentPose; // Update last pose
+        driveCommand.driveToSelectedPose(); // Trigger drive function
+    }
+}
+
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -158,8 +187,4 @@ public class RobotContainer {
     // An example command will be run in autonomous
     return autoChooser.getSelected();
   }
-
-  public VisionSubsystem getVisionSubsystem() {
-    return visionSubsystem;
-}
 }

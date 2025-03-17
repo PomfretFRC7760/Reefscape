@@ -70,6 +70,8 @@ public class RobotContainer {
 
 
   private final LocationChooser locationChooser = new LocationChooser(this);
+
+  private LimelightPoseReset limelightPoseReset = new LimelightPoseReset(driveSubsystem, visionSubsystem);
   
 
   // The driver's controller
@@ -161,10 +163,7 @@ public class RobotContainer {
     floorIntakeRotationSubsystem.setDefaultCommand(new FloorRotationCommand(floorIntakeRotationSubsystem, () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
     liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean()));
     cameraSubsystem.setDefaultCommand(new CameraCommand(cameraSubsystem));
-    BooleanSupplier povDownPressed = () -> driverController.povDown().getAsBoolean();
-        
-    Trigger povDownTrigger = new Trigger(povDownPressed);
-    povDownTrigger.whileTrue(new LimelightPoseReset(povDownPressed, driveSubsystem, visionSubsystem));
+    SmartDashboard.putData("Reset pose with Limelight", new InstantCommand(limelightPoseReset::resetPose));
   }
 
   public void updateSelectedPose() {

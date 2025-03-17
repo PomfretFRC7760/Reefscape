@@ -10,27 +10,27 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class LimelightPoseReset extends Command{
     private final CANDriveSubsystem drivetrain;
     private final VisionSubsystem visionSubsystem;
-    private final BooleanSupplier resetPose;
-    public LimelightPoseReset(BooleanSupplier resetPose, CANDriveSubsystem drivetrain, VisionSubsystem visionSubsystem) {
+    private Pose2d limePose;
+    public LimelightPoseReset(CANDriveSubsystem drivetrain, VisionSubsystem visionSubsystem) {
         this.drivetrain = drivetrain;
         this.visionSubsystem = visionSubsystem;
-        this.resetPose = resetPose;
     }
 
     @Override
     public void initialize() {
-        SmartDashboard.putString("BIG ASS WARNING", "CHECK LIMELIGHT TELEMETRY BEFORE RESETTING POSE!!!");
     }
 
     @Override
     public void execute() {
-        Pose2d limePose = visionSubsystem.limeFpose();
+        limePose = visionSubsystem.limeFpose();
         SmartDashboard.putString("Limelight Pose", limePose != null ? limePose.toString() : "Unacceptable");
-        if (resetPose.getAsBoolean()){
+        
+    }
+
+    public void resetPose() {
             if (limePose != null) {
                 drivetrain.resetPose(limePose);
             }
-        }
     }
     
 }

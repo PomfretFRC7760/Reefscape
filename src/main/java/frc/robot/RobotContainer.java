@@ -102,7 +102,7 @@ public class RobotContainer {
         () -> -driverController.getLeftY(),
         () -> driverController.getLeftX(),
         () -> -driverController.getRightX(),
-        () -> driverController.x().getAsBoolean(),
+        () -> driverController.y().getAsBoolean(), () -> driverController.x().getAsBoolean(),
         driveSubsystem,
         locationChooser
     );

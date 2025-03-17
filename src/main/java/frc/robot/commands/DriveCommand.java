@@ -21,18 +21,20 @@ public class DriveCommand extends Command {
   private final DoubleSupplier zRotation;
   private final CANDriveSubsystem driveSubsystem;
   private final BooleanSupplier robotCentric;
+  private final BooleanSupplier abortAuto;
   private boolean robotCentricMode = false;
   private boolean lastRobotCentricButtonState = false;
   private final LocationChooser locationChooser;
   private Command activePathfindingCommand = null; // Store the pathfinding command
 
-  public DriveCommand(DoubleSupplier ySpeed, DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier robotCentric, CANDriveSubsystem driveSubsystem, LocationChooser locationChooser) {
+  public DriveCommand(DoubleSupplier ySpeed, DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier robotCentric, BooleanSupplier abortAuto, CANDriveSubsystem driveSubsystem, LocationChooser locationChooser) {
     this.ySpeed = ySpeed;
     this.xSpeed = xSpeed;
     this.zRotation = zRotation;
     this.robotCentric = robotCentric;
     this.driveSubsystem = driveSubsystem;
     this.locationChooser = locationChooser;
+    this.abortAuto = abortAuto;
 
     addRequirements(this.driveSubsystem);
   }
@@ -47,7 +49,7 @@ public class DriveCommand extends Command {
     lastRobotCentricButtonState = currentButtonState;  // Update last state
 
     // Cancel active path command if joystick moves past threshold
-    if (Math.abs(ySpeed.getAsDouble()) > 0.25 || Math.abs(xSpeed.getAsDouble()) > 0.25 || Math.abs(zRotation.getAsDouble()) > 0.25) {
+    if ((Math.abs(ySpeed.getAsDouble()) > 0.25 || Math.abs(xSpeed.getAsDouble()) > 0.25 || Math.abs(zRotation.getAsDouble()) > 0.25) || abortAuto.getAsBoolean()) {
       if (activePathfindingCommand != null && !activePathfindingCommand.isFinished()) {
         activePathfindingCommand.cancel();
         activePathfindingCommand = null; // Clear the reference

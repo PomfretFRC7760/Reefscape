@@ -13,8 +13,8 @@ import frc.robot.util.LocationChooser;
 
 public class Locations {
 
-    public static double robotWidth = 0.560705;
-    public static double robotLength = 0.4713986;
+    public static double robotWidth = 0.7112;
+    public static double robotLength = 0.8128;
     public static Transform2d halfRobot = new Transform2d(robotLength / 2.0, 0, new Rotation2d());
 
     public static Transform2d halfRobotGatherLeftFar =

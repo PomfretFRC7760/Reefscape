@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.FloorIntakeRollerSubsystem;
 import java.util.function.BooleanSupplier;
@@ -11,21 +13,26 @@ public class FloorRollerCommand extends Command {
   private final BooleanSupplier shouldJettison;
   private final DoubleSupplier leftTrigger;
   private final DoubleSupplier rightTrigger;
-  private final BooleanSupplier manualOverride;
 
-  public FloorRollerCommand(FloorIntakeRollerSubsystem subsystem, BooleanSupplier shouldIntake, BooleanSupplier shouldJettison, BooleanSupplier manualOverride, DoubleSupplier leftTrigger, DoubleSupplier rightTrigger) {
+  private final SendableChooser<Boolean> manualOverride = new SendableChooser<>();
+
+  public FloorRollerCommand(FloorIntakeRollerSubsystem subsystem, BooleanSupplier shouldIntake, BooleanSupplier shouldJettison, DoubleSupplier leftTrigger, DoubleSupplier rightTrigger) {
     rollerSubsystem = subsystem;
     this.shouldIntake = shouldIntake;
     this.shouldJettison = shouldJettison;
     this.leftTrigger = leftTrigger;
     this.rightTrigger = rightTrigger;
-    this.manualOverride = manualOverride;
     addRequirements(rollerSubsystem);
   }
 
   @Override
-  public void initialize() {
-    if (!manualOverride.getAsBoolean()) {
+  public void execute() {
+    manualOverride.setDefaultOption("Algae intake override off", false);
+    manualOverride.addOption("Algae intake override on", true);
+
+        // Put the chooser on the SmartDashboard
+    SmartDashboard.putData("Algae intake override", manualOverride);
+    if (!manualOverride.getSelected()) {
     if (shouldIntake.getAsBoolean() && shouldJettison.getAsBoolean()) {
       rollerSubsystem.stallRoller();
     }

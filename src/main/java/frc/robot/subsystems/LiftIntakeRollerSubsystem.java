@@ -6,17 +6,16 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 /** Class to run the rollers over CAN */
 public class LiftIntakeRollerSubsystem extends SubsystemBase {
-  private final SparkMax motor;
+  private final VictorSPX motor;
   private final Timer timer = new Timer();
 
   public LiftIntakeRollerSubsystem() {
     // Set up the roller motor as a brushed motor
-    motor = new SparkMax(11, MotorType.kBrushed);
+    motor = new VictorSPX(11);
   }
 
   @Override
@@ -25,31 +24,31 @@ public class LiftIntakeRollerSubsystem extends SubsystemBase {
 
   /** This is a method that makes the roller spin */
   public void runRollerIntake() {
-    motor.set(-0.5);
+    motor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, -0.5);
   }
   public void stallRoller() {
-    motor.set( -0.30);
+    motor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, -0.30);
   }
   public void runRollerJettison() {
-    motor.set( 0.5);
+    motor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, 0.5);
   }
   public void stopRoller() {
-    motor.set( 0);
+    motor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, 0);
   }
   public void manualControlJettison(double rightTrigger) {
-    motor.set(rightTrigger/2);
+    motor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, rightTrigger/2);
   }
   public void manualControlIntake(double leftTrigger) {
-    motor.set(-leftTrigger/2);
+    motor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, -leftTrigger/2);
   }
   public void autoRunRollerJettison() {
-    motor.set(0.5);
+    motor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, 0.5);
     timer.reset();
     timer.start();
     while (timer.get() < 2.0) {
       // Wait for 2 seconds
     }
-    motor.set(0);
+    motor.set(com.ctre.phoenix.motorcontrol.ControlMode.PercentOutput, 0);
     timer.stop();
     System.out.println("jettison command received");
   }

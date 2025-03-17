@@ -1,27 +1,30 @@
 package frc.robot.commands;
-import java.util.function.BooleanSupplier;
-import frc.robot.subsystems.CameraSubsystem;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.CameraSubsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class CameraCommand extends Command {
-    private final BooleanSupplier cameraSwitch;
+    private final SendableChooser<Integer> cameraChooser = new SendableChooser<>();
     private final CameraSubsystem cameraSubsystem;
-    private double cameraSelection = 0;
-    public CameraCommand(BooleanSupplier cameraSwitch, CameraSubsystem cameraSubystem) {
-        this.cameraSwitch = cameraSwitch;
-        this.cameraSubsystem = cameraSubystem;
+
+    public CameraCommand(CameraSubsystem cameraSubsystem) {
+        this.cameraSubsystem = cameraSubsystem;
+        
+        // Define options for camera selection
+        cameraChooser.setDefaultOption("Algae intake camera", 0);
+        cameraChooser.addOption("Coral intake camera", 1);
+
+        // Display on SmartDashboard
+        SmartDashboard.putData("Camera Selector", cameraChooser);
+        
         addRequirements(this.cameraSubsystem);
     }
-@Override
-public void execute() {
-    if (cameraSwitch.getAsBoolean()) {
-        if (cameraSelection == 0) {
-            cameraSelection = 1;
-        }
-        else {
-            cameraSelection = 0;
-        }
+
+    @Override
+    public void execute() {
+        int selectedCamera = cameraChooser.getSelected(); // Get the selected camera index
+        cameraSubsystem.SwitchCameras(selectedCamera); // Switch to the selected camera
     }
-    cameraSubsystem.SwitchCameras(cameraSelection);
-}
 }

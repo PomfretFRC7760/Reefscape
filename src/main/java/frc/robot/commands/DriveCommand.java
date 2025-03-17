@@ -24,6 +24,7 @@ public class DriveCommand extends Command {
   private boolean robotCentricMode = false;
   private boolean lastRobotCentricButtonState = false;
   private final LocationChooser locationChooser;
+  private Command activePathfindingCommand = null; // Store the pathfinding command
 
   public DriveCommand(DoubleSupplier ySpeed, DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier robotCentric, CANDriveSubsystem driveSubsystem, LocationChooser locationChooser) {
     this.ySpeed = ySpeed;
@@ -45,6 +46,14 @@ public class DriveCommand extends Command {
     }
     lastRobotCentricButtonState = currentButtonState;  // Update last state
 
+    // Cancel active path command if joystick moves past threshold
+    if (Math.abs(ySpeed.getAsDouble()) > 0.25 || Math.abs(xSpeed.getAsDouble()) > 0.25 || Math.abs(zRotation.getAsDouble()) > 0.25) {
+      if (activePathfindingCommand != null && !activePathfindingCommand.isFinished()) {
+        activePathfindingCommand.cancel();
+        activePathfindingCommand = null; // Clear the reference
+      }
+    }
+
     if (robotCentricMode) {
       driveSubsystem.driveRobotCentric(ySpeed.getAsDouble(), xSpeed.getAsDouble(), zRotation.getAsDouble());
     } else {
@@ -55,7 +64,6 @@ public class DriveCommand extends Command {
     Pose2d selectedPose = locationChooser.selectCoralStation();
     SmartDashboard.putString("Selected Robot Pose", 
     (selectedPose != null) ? selectedPose.toString() : "None");
-
   }
 
   // This function should be triggered by a button to drive to the selected pose
@@ -71,18 +79,20 @@ public class DriveCommand extends Command {
         3.0, 4.0,
         Units.degreesToRadians(540), Units.degreesToRadians(720));
 
-    Command pathfindingCommand = AutoBuilder.pathfindToPose(
+    activePathfindingCommand = AutoBuilder.pathfindToPose(
         selectedPose,
         constraints,
         0.0 // Goal end velocity in meters/sec
     );
 
-    CommandScheduler.getInstance().schedule(pathfindingCommand);
-}
-
+    CommandScheduler.getInstance().schedule(activePathfindingCommand);
+  }
 
   @Override
   public void end(boolean isInterrupted) {
+    if (activePathfindingCommand != null) {
+      activePathfindingCommand.cancel();
+    }
   }
 
   @Override

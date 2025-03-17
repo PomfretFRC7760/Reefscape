@@ -9,7 +9,6 @@ import java.util.List;
 
 public class LocationChooser {
 
-    private final SendableChooser<Integer> levelChooser = new SendableChooser<>();
     private final SendableChooser<ReefSticks> letterChooser = new SendableChooser<>();
 //    private final SendableChooser<Boolean> climbModeChooser = new SendableChooser<>();
     
@@ -17,11 +16,6 @@ public class LocationChooser {
 
     public LocationChooser(RobotContainer r) {
         this.r = r;
-        
-        // Level selection
-        levelChooser.setDefaultOption("1", 1);
-        levelChooser.addOption("2", 2);
-        levelChooser.addOption("3", 3);
         // levelChooser.addOption("4", 4);
 
         // Letter selection
@@ -37,7 +31,6 @@ public class LocationChooser {
 
 
         // Add choosers to SmartDashboard
-        SmartDashboard.putData("Level", levelChooser);
         SmartDashboard.putData("Letter", letterChooser);
         //SmartDashboard.putData("Climb Mode", climbModeChooser);
     }

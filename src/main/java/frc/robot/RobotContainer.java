@@ -31,8 +31,6 @@ import frc.robot.subsystems.LiftSubsystem;
 import frc.robot.commands.LiftCommand;
 import frc.robot.subsystems.FloorIntakeRotationSubsystem;
 import frc.robot.commands.FloorRotationCommand;
-import frc.robot.subsystems.LiftIntakeRotationSubsystem;
-import frc.robot.commands.LiftRotationCommand;
 import frc.robot.commands.LiftRollerCommand;
 import frc.robot.commands.CameraCommand;
 import frc.robot.subsystems.CameraSubsystem;
@@ -42,7 +40,6 @@ import frc.robot.commands.FloorIntakePosition;
 import frc.robot.commands.LimelightPoseReset; 
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.util.LocationChooser;
-
 /**
  * This class is where the bulk of the robot should be declared. Since
  * Command-based is a
@@ -57,13 +54,13 @@ public class RobotContainer {
 
   private final FloorIntakeRollerSubsystem rollerSubsystem = new FloorIntakeRollerSubsystem();
   private final GyroSubsystem gyroSubsystem = new GyroSubsystem();
+
+  private final GyroCommand gyroCommand = new GyroCommand(gyroSubsystem);
   
   public final CANDriveSubsystem driveSubsystem = new CANDriveSubsystem(gyroSubsystem);
   private final LiftSubsystem liftSubsystem = new LiftSubsystem();
 
   private final FloorIntakeRotationSubsystem floorIntakeRotationSubsystem = new FloorIntakeRotationSubsystem();
-
-  private final LiftIntakeRotationSubsystem liftIntakeRotationSubsystem = new LiftIntakeRotationSubsystem();
 
   private final LiftIntakeRollerSubsystem liftIntakeRollerSubsystem = new LiftIntakeRollerSubsystem();
   private final CameraSubsystem cameraSubsystem = new CameraSubsystem();
@@ -88,6 +85,8 @@ public class RobotContainer {
 
   private Pose2d lastSelectedPose = null;
 
+  private final LiftCommand liftCommand = new LiftCommand(() -> driverController.povUp().getAsBoolean(), () -> driverController.povDown().getAsBoolean(), () -> driverController.povLeft().getAsBoolean(), () -> driverController.povRight().getAsBoolean(), () -> operatorController.getRightY(), liftSubsystem);
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -101,7 +100,7 @@ public class RobotContainer {
         () -> -driverController.getLeftY(),
         () -> driverController.getLeftX(),
         () -> -driverController.getRightX(),
-        () -> driverController.povUp().getAsBoolean(),
+        () -> driverController.x().getAsBoolean(),
         driveSubsystem,
         locationChooser
     );
@@ -155,13 +154,13 @@ public class RobotContainer {
     // Set the default command for the roller subsystem to an instance of
     // RollerCommand with the values provided by the triggers on the operator
     // controller
-    gyroSubsystem.setDefaultCommand(new GyroCommand(() -> driverController.x().getAsBoolean(), gyroSubsystem));
-    liftSubsystem.setDefaultCommand(new LiftCommand(() -> operatorController.povUp().getAsBoolean(), () -> operatorController.povDown().getAsBoolean(), () -> operatorController.povLeft().getAsBoolean(), () -> operatorController.povRight().getAsBoolean(), () -> operatorController.x().getAsBoolean(), () -> operatorController.getRightY(), liftSubsystem));
-    rollerSubsystem.setDefaultCommand(new FloorRollerCommand(rollerSubsystem, () -> operatorController.a().getAsBoolean(), () -> operatorController.b().getAsBoolean(), () -> driverController.y().getAsBoolean(), () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis()));
-    floorIntakeRotationSubsystem.setDefaultCommand(new FloorRotationCommand(floorIntakeRotationSubsystem, () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis(), () -> operatorController.y().getAsBoolean()));
-    liftIntakeRotationSubsystem.setDefaultCommand(new LiftRotationCommand(liftIntakeRotationSubsystem, () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis(), () -> driverController.y().getAsBoolean()));
-    liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean(), () -> operatorController.y().getAsBoolean(), () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
-    cameraSubsystem.setDefaultCommand(new CameraCommand(() -> operatorController.x().getAsBoolean(), cameraSubsystem));
+    SmartDashboard.putData("Reset gyro", new InstantCommand(gyroCommand::resetGyro));
+    liftSubsystem.setDefaultCommand(liftCommand);
+    SmartDashboard.putData("Reset lift encoders", new InstantCommand(liftCommand::resetLiftPosition));
+    rollerSubsystem.setDefaultCommand(new FloorRollerCommand(rollerSubsystem, () -> operatorController.a().getAsBoolean(), () -> operatorController.b().getAsBoolean(), () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis()));
+    floorIntakeRotationSubsystem.setDefaultCommand(new FloorRotationCommand(floorIntakeRotationSubsystem, () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
+    liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean()));
+    cameraSubsystem.setDefaultCommand(new CameraCommand(cameraSubsystem));
     BooleanSupplier povDownPressed = () -> driverController.povDown().getAsBoolean();
         
     Trigger povDownTrigger = new Trigger(povDownPressed);

@@ -4,6 +4,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LiftSubsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class LiftCommand extends Command {
@@ -13,44 +14,37 @@ public class LiftCommand extends Command {
     private final BooleanSupplier dPadDown;
     private final BooleanSupplier dPadLeft;
     private final BooleanSupplier dPadRight;
-    private boolean previousDPadUp = false;
-    private boolean previousDPadDown = false;
     private final DoubleSupplier rightStickY;
-    private final BooleanSupplier override;
-    private boolean manualControlEnabled = false;
 
-    public LiftCommand(BooleanSupplier dPadUp, BooleanSupplier dPadDown, BooleanSupplier dPadLeft, BooleanSupplier dPadRight, BooleanSupplier override, DoubleSupplier rightStickY,LiftSubsystem liftSubsystem ) {
+    private final SendableChooser<Boolean> manualControlEnabled = new SendableChooser<>();
+
+    public LiftCommand(BooleanSupplier dPadUp, BooleanSupplier dPadDown, BooleanSupplier dPadLeft, BooleanSupplier dPadRight, DoubleSupplier rightStickY, LiftSubsystem liftSubsystem) {
         this.dPadUp = dPadUp;
         this.dPadDown = dPadDown;
         this.dPadLeft = dPadLeft;
         this.dPadRight = dPadRight;
         this.liftSubsystem = liftSubsystem;
         this.rightStickY = rightStickY;
-        this.override = override;
         addRequirements(liftSubsystem);
     }
 
     @Override
     public void initialize() {
-        liftSubsystem.resetPosition();
     }
 
     @Override
     public void execute() {
+        manualControlEnabled.setDefaultOption("Lift override off", false);
+        manualControlEnabled.addOption("Lift override on", true);
+
+        // Put the chooser on the SmartDashboard
+        SmartDashboard.putData("Lift override", manualControlEnabled);
         // Toggle manual control mode
-        if (override.getAsBoolean()) {
-            if (manualControlEnabled) {
-                manualControlEnabled = false;
-            }
-            else {
-                manualControlEnabled = true;
-            }
-        }
         if (dPadDown.getAsBoolean() || dPadUp.getAsBoolean() || dPadLeft.getAsBoolean() || dPadRight.getAsBoolean()) {
-            manualControlEnabled = false;
+            manualControlEnabled.setDefaultOption("Lift override off", false);
         }
 
-        if (manualControlEnabled) {
+        if (manualControlEnabled.getSelected()) {
             // Manual control mode
             double speed = rightStickY.getAsDouble();
             liftSubsystem.manualOverrideControl(speed);
@@ -97,7 +91,11 @@ public class LiftCommand extends Command {
         }
         
         // Update the SmartDashboard
-        SmartDashboard.putBoolean("Manual Control", manualControlEnabled);
         SmartDashboard.putNumber("Current Preset", currentPreset);
     }
+
+    public void resetLiftPosition() {
+        liftSubsystem.resetPosition();
+    }
+
 }

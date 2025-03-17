@@ -269,11 +269,34 @@ public class Locations {
         return new Pose2d(in.getTranslation(), in.getRotation().plus(Rotation2d.k180deg));
     }
 
+    public static Pose2d invertAndOffset(Pose2d in) {
+        if (isBlue()) {
+            return new Pose2d(
+                new Translation2d(in.getX() - 0.75, in.getY()), // Offset x by -0.75m
+                in.getRotation().plus(Rotation2d.k180deg) // Invert rotation
+            );
+        } else {
+            return new Pose2d(
+                new Translation2d(in.getX() + 0.75, in.getY()), // Offset x by +0.75m
+                in.getRotation().plus(Rotation2d.k180deg) // Invert rotation
+            );
+        }
+    }
+    
+
     public static Pose2d getProcLoc() {
         if (isBlue()) {
             return (tags.getTagPose(3).get().toPose2d().plus(halfRobot));
         } else {
             return (tags.getTagPose(16).get().toPose2d().plus(halfRobot));
+        }
+    }
+
+    public static Pose2d getBargeLoc() {
+        if (isBlue()) {
+            return invertAndOffset(tags.getTagPose(14).get().toPose2d().plus(halfRobot));
+        } else {
+            return invertAndOffset(tags.getTagPose(5).get().toPose2d().plus(halfRobot));
         }
     }
 }

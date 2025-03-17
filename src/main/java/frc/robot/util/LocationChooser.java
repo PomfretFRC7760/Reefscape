@@ -43,7 +43,7 @@ public class LocationChooser {
     }
 
     public static enum ReefSticks {
-        A, B, C, D, E, F, G, H, I, J, K, L, PROCESSOR, LEFT, RIGHT, CLOSEST, NONE
+        A, B, C, D, E, F, G, H, I, J, K, L, PROCESSOR, BARGE, LEFT, RIGHT, CLOSEST, NONE
     }
 
     public Pose2d selectCoralStation() {
@@ -57,6 +57,9 @@ public class LocationChooser {
 
             case PROCESSOR:
                 return Locations.getProcLoc();
+
+            case BARGE:
+                return Locations.getBargeLoc();
 
             default:
                 return Locations.getReefLocation(letterChooser.getSelected());
@@ -103,6 +106,9 @@ public class LocationChooser {
                 break;
             case RIGHT:
                 scoringPosition = Rotation2d.fromDegrees(234);
+                break;
+            case BARGE:
+                scoringPosition = Rotation2d.fromDegrees(0);
                 break;
             default:
                 scoringPosition = Rotation2d.fromDegrees(0);

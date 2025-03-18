@@ -13,4 +13,8 @@ public class UpperIntakeJettison extends Command{
         intake.autoRunRollerJettison();
         System.out.println("jettison!");
     }
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 }

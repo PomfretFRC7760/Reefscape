@@ -52,8 +52,6 @@ public class CANDriveSubsystem extends SubsystemBase {
     private final SparkFlex rearLeft;
     private final SparkFlex rearRight;
 
-    private final MecanumDrivePoseEstimator mecanumDrivePoseEstimator;
-
     private final GyroSubsystem gyroSubsystem;
 
     private final MecanumDrive mecanumDrive;
@@ -154,8 +152,6 @@ public class CANDriveSubsystem extends SubsystemBase {
         // Initialize odometry (assumes gyro angle is 0 at start)
         MecanumDriveWheelPositions initialWheelPositions = new MecanumDriveWheelPositions(0, 0, 0, 0);
         odometry = new MecanumDriveOdometry(kinematics, Rotation2d.fromDegrees(poseAngle), initialWheelPositions);
-
-        mecanumDrivePoseEstimator = new MecanumDrivePoseEstimator(kinematics, Rotation2d.fromDegrees(poseAngle), initialWheelPositions, robotPose, initialStateStdDevs, initialVisionMeasurementStdDevs);
 
         try{
             config = RobotConfig.fromGUISettings();

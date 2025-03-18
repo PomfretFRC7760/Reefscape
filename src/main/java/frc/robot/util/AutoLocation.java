@@ -9,9 +9,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.util.LocationChooser;
+import frc.robot.util.AutoConfig;
 
-public class Locations {
+public class AutoLocation {
 
     public static double robotWidth = 0.9398;
     public static double robotLength = 1.0414;
@@ -97,7 +97,7 @@ public class Locations {
     }
 
     // everyone hates this
-    public static Pose2d getReefLocation(LocationChooser.ReefSticks position) {
+    public static Pose2d getReefLocation(AutoConfig.ReefSticks position) {
         switch (position) {
             case B:
                 if (isBlue()) {
@@ -176,44 +176,50 @@ public class Locations {
         }
     }
 
-    public static Pose2d getAlgaeReefLocation(LocationChooser.ReefSticks position) {
+    public static Pose2d getAlgaeReefLocation(AutoConfig.ReefSticks position) {
         switch (position) {
-            case AB:
+            case A:
+            case B:
             default:
                 if (isBlue()) {
-                    return (tags.getTagPose(18).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(18).get().toPose2d().plus(halfRobotAlgae));
                 } else {
-                    return (tags.getTagPose(7).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(7).get().toPose2d().plus(halfRobotAlgae));
                 }
-            case CD:
+            case C:
+            case D:
                 if (isBlue()) {
-                    return (tags.getTagPose(17).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(17).get().toPose2d().plus(halfRobotAlgae));
                 } else {
-                    return (tags.getTagPose(8).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(8).get().toPose2d().plus(halfRobotAlgae));
                 }
-            case EF:
+            case E:
+            case F:
                 if (isBlue()) {
-                    return (tags.getTagPose(22).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(22).get().toPose2d().plus(halfRobotAlgae));
                 } else {
-                    return (tags.getTagPose(9).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(9).get().toPose2d().plus(halfRobotAlgae));
                 }
-            case GH:
+            case G:
+            case H:
                 if (isBlue()) {
-                    return (tags.getTagPose(21).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(21).get().toPose2d().plus(halfRobotAlgae));
                 } else {
-                    return (tags.getTagPose(10).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(10).get().toPose2d().plus(halfRobotAlgae));
                 }
-            case IJ:
+            case I:
+            case J:
                 if (isBlue()) {
-                    return (tags.getTagPose(20).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(20).get().toPose2d().plus(halfRobotAlgae));
                 } else {
-                    return (tags.getTagPose(11).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(11).get().toPose2d().plus(halfRobotAlgae));
                 }
-            case KL:
+            case K:
+            case L:
                 if (isBlue()) {
-                    return (tags.getTagPose(19).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(19).get().toPose2d().plus(halfRobotAlgae));
                 } else {
-                    return (tags.getTagPose(6).get().toPose2d().plus(halfRobotAlgae));
+                    return invert(tags.getTagPose(6).get().toPose2d().plus(halfRobotAlgae));
                 }
         }
     }
@@ -291,6 +297,30 @@ public class Locations {
             return invertAndOffset(tags.getTagPose(14).get().toPose2d().plus(halfRobot));
         } else {
             return invertAndOffset(tags.getTagPose(5).get().toPose2d().plus(halfRobot));
+        }
+    }
+
+    public static Pose2d getStartingLoc(AutoConfig.Start position) {
+        if (isBlue()) {
+            switch(position) {
+                case LEFT:
+                    return new Pose2d(7.5565, 6.19, Rotation2d.k180deg);
+                case RIGHT:
+                    return new Pose2d(7.5565, 1.86, Rotation2d.k180deg);
+                case CENTER:
+                default:
+                    return new Pose2d(7.5565, 4.025, Rotation2d.k180deg);
+            }
+        } else {
+            switch(position) {
+                case LEFT:
+                    return new Pose2d(9.9935, 1.86, Rotation2d.kZero);
+                case RIGHT:
+                    return new Pose2d(9.9935, 6.19, Rotation2d.kZero);
+                case CENTER:
+                default:
+                    return new Pose2d(9.9935, 4.025, Rotation2d.kZero);
+            }
         }
     }
 }

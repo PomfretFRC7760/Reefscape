@@ -16,7 +16,6 @@ public class LocationChooser {
 
     public LocationChooser(RobotContainer r) {
         this.r = r;
-        // levelChooser.addOption("4", 4);
 
         // Letter selection
         for (ReefSticks reef : ReefSticks.values()) {
@@ -36,7 +35,7 @@ public class LocationChooser {
     }
 
     public static enum ReefSticks {
-        A, B, C, D, E, F, G, H, I, J, K, L, PROCESSOR, BARGE, LEFT, RIGHT, CLOSEST, NONE
+        A, B, C, D, E, F, G, H, I, J, K, L, AB, CD, EF, GH, IJ, KL, PROCESSOR, BARGE, LEFT, RIGHT, CLOSEST, NONE
     }
 
     public Pose2d selectCoralStation() {
@@ -53,6 +52,9 @@ public class LocationChooser {
 
             case BARGE:
                 return Locations.getBargeLoc();
+
+            case AB, CD, EF, GH, IJ, KL:
+                return Locations.getAlgaeReefLocation(letterChooser.getSelected());
 
             default:
                 return Locations.getReefLocation(letterChooser.getSelected());
@@ -95,10 +97,10 @@ public class LocationChooser {
                 scoringPosition = Rotation2d.fromDegrees(270);
                 break;
             case LEFT:
-                scoringPosition = Rotation2d.fromDegrees(126);
+                scoringPosition = Rotation2d.fromDegrees(306);
                 break;
             case RIGHT:
-                scoringPosition = Rotation2d.fromDegrees(234);
+                scoringPosition = Rotation2d.fromDegrees(54);
                 break;
             case BARGE:
                 scoringPosition = Rotation2d.fromDegrees(0);

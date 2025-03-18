@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.function.BooleanSupplier;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -35,11 +33,13 @@ import frc.robot.commands.LiftRollerCommand;
 import frc.robot.commands.CameraCommand;
 import frc.robot.subsystems.CameraSubsystem;
 import frc.robot.commands.UpperIntakeJettison;
-import frc.robot.commands.FloorIntakeJettison;
-import frc.robot.commands.FloorIntakePosition;
 import frc.robot.commands.LimelightPoseReset; 
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.util.AutoConfig;
 import frc.robot.util.LocationChooser;
+import frc.robot.commands.LiftPosition1;
+import frc.robot.commands.LiftPosition2;
+import frc.robot.commands.LiftPosition3;
 /**
  * This class is where the bulk of the robot should be declared. Since
  * Command-based is a
@@ -66,12 +66,14 @@ public class RobotContainer {
   private final CameraSubsystem cameraSubsystem = new CameraSubsystem();
   private final VisionSubsystem visionSubsystem = new VisionSubsystem(driveSubsystem);
 
-  private final DriveCommand driveCommand;
+  public final DriveCommand driveCommand;
 
 
   private final LocationChooser locationChooser = new LocationChooser(this);
 
   private LimelightPoseReset limelightPoseReset = new LimelightPoseReset(driveSubsystem, visionSubsystem);
+
+  public final AutoConfig autoConfig;
   
 
   // The driver's controller
@@ -93,9 +95,13 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    NamedCommands.registerCommand("Floor Intake Position", new FloorIntakePosition(floorIntakeRotationSubsystem));
-    NamedCommands.registerCommand("Lift Intake Jettison Coral", new UpperIntakeJettison(liftIntakeRollerSubsystem));
-    NamedCommands.registerCommand("Floor Intake Jettison Coral", new FloorIntakeJettison(rollerSubsystem));
+    NamedCommands.registerCommand("Lift position 1", new LiftPosition1(liftSubsystem));
+    NamedCommands.registerCommand("Lift position 2", new LiftPosition2(liftSubsystem));
+    NamedCommands.registerCommand("Lift position 3", new LiftPosition3(liftSubsystem));
+
+    autoConfig = new AutoConfig(this);
+
+    NamedCommands.registerCommand("Jettison Coral", new UpperIntakeJettison(liftIntakeRollerSubsystem));
     configureBindings();
 
     driveCommand = new DriveCommand(
@@ -104,14 +110,9 @@ public class RobotContainer {
         () -> -driverController.getRightX(),
         () -> driverController.y().getAsBoolean(), () -> driverController.x().getAsBoolean(),
         driveSubsystem,
-        locationChooser
+        locationChooser, autoConfig, liftSubsystem, liftIntakeRollerSubsystem
     );
     driveSubsystem.setDefaultCommand(driveCommand);
-
-    //SmartDashboard.putData("Drive to Selected Pose", new InstantCommand(driveCommand::driveToSelectedPose));
-
-
-    
 
     // Set the options to show up in the Dashboard for selecting auto modes. If you
     // add additional auto modes you can add additional lines here with

@@ -21,4 +21,5 @@
 - [ ] More commands for lift and intakes for autonomous
 - [ ] Rework subsystems to account for recent hardware design changes
 - [x] Better control interface (move some controls over to smartdashboard)
-- [ ] Build autos from smartdashboard
+- [x] Build autos from smartdashboard
+- [ ] Option to use premade autos

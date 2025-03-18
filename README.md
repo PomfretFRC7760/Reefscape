@@ -22,4 +22,4 @@
 - [ ] Rework subsystems to account for recent hardware design changes
 - [x] Better control interface (move some controls over to smartdashboard)
 - [x] Build autos from smartdashboard
-- [ ] Option to use premade autos
+- [x] Option to use premade autos

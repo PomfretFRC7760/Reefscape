@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.FloorRollerCommand;
 import frc.robot.commands.GyroCommand;
+import frc.robot.commands.LiftAndScore;
 import frc.robot.subsystems.CANDriveSubsystem;
 import frc.robot.subsystems.GyroSubsystem;
 import frc.robot.subsystems.LiftIntakeRollerSubsystem;
@@ -40,6 +41,7 @@ import frc.robot.util.LocationChooser;
 import frc.robot.commands.LiftPosition1;
 import frc.robot.commands.LiftPosition2;
 import frc.robot.commands.LiftPosition3;
+import frc.robot.commands.LiftAndScore;
 /**
  * This class is where the bulk of the robot should be declared. Since
  * Command-based is a
@@ -85,9 +87,11 @@ public class RobotContainer {
       1);
 
   // The autonomous chooser
+  private final SendableChooser<Boolean> autoMode = new SendableChooser<>();
   private final SendableChooser<Command> autoChooser;
 
   private Pose2d lastSelectedPose = null;
+  
 
   private final LiftCommand liftCommand = new LiftCommand(() -> driverController.povUp().getAsBoolean(), () -> driverController.povDown().getAsBoolean(), () -> driverController.povLeft().getAsBoolean(), () -> driverController.povRight().getAsBoolean(), () -> operatorController.getRightY(), liftSubsystem);
 
@@ -117,8 +121,11 @@ public class RobotContainer {
     // Set the options to show up in the Dashboard for selecting auto modes. If you
     // add additional auto modes you can add additional lines here with
     // autoChooser.addOption
-
+    autoMode.setDefaultOption("Custom path", true);
+    autoMode.addOption("Preplanned path", false);
+    
     autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Mode", autoMode);
     SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
@@ -165,6 +172,9 @@ public class RobotContainer {
     liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean()));
     cameraSubsystem.setDefaultCommand(new CameraCommand(cameraSubsystem));
     SmartDashboard.putData("Reset pose with Limelight", new InstantCommand(limelightPoseReset::resetPose));
+    SmartDashboard.putData("L1 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 1).schedule()));
+    SmartDashboard.putData("L2 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 2).schedule()));
+    SmartDashboard.putData("L3 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 3).schedule()));
   }
 
   public void updateSelectedPose() {
@@ -183,7 +193,12 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return autoChooser.getSelected();
+    if (autoMode.getSelected()) {
+      Command autoSequence = driveCommand.buildFullAutoSequence();
+      return autoSequence;
+    }
+    else{
+      return autoChooser.getSelected();
+    }
   }
 }

@@ -83,14 +83,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    Command autoSequence = m_robotContainer.driveCommand.buildFullAutoSequence();
-    CommandScheduler.getInstance().schedule(autoSequence);
-    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // // schedule the autonomous command (example)
-    // if (m_autonomousCommand != null) {
-    //   m_autonomousCommand.schedule();
-    // }
+    // schedule the autonomous command (example)
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.schedule();
+    }
   }
 
   /** This function is called periodically during autonomous. */

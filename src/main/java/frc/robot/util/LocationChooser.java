@@ -105,6 +105,25 @@ public class LocationChooser {
             case BARGE:
                 scoringPosition = Rotation2d.fromDegrees(0);
                 break;
+
+            case AB:
+                scoringPosition = Rotation2d.fromDegrees(180);
+                break;
+            case CD:    
+                scoringPosition = Rotation2d.fromDegrees(240);
+                break;
+            case EF:
+                scoringPosition = Rotation2d.fromDegrees(300);
+                break;
+            case GH:
+                scoringPosition = Rotation2d.fromDegrees(0);
+                break;
+            case IJ:
+                scoringPosition = Rotation2d.fromDegrees(60);
+                break;
+            case KL:
+                scoringPosition = Rotation2d.fromDegrees(120);
+                break;
             default:
                 scoringPosition = Rotation2d.fromDegrees(0);
         }

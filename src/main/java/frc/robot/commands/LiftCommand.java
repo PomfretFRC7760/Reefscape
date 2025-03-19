@@ -15,8 +15,7 @@ public class LiftCommand extends Command {
     private final BooleanSupplier dPadLeft;
     private final BooleanSupplier dPadRight;
     private final DoubleSupplier rightStickY;
-
-    private final SendableChooser<Boolean> manualControlEnabled = new SendableChooser<>();
+    private boolean manualControlEnabled = false;
 
     public LiftCommand(BooleanSupplier dPadUp, BooleanSupplier dPadDown, BooleanSupplier dPadLeft, BooleanSupplier dPadRight, DoubleSupplier rightStickY, LiftSubsystem liftSubsystem) {
         this.dPadUp = dPadUp;
@@ -26,6 +25,8 @@ public class LiftCommand extends Command {
         this.liftSubsystem = liftSubsystem;
         this.rightStickY = rightStickY;
         addRequirements(liftSubsystem);
+
+        
     }
 
     @Override
@@ -34,17 +35,12 @@ public class LiftCommand extends Command {
 
     @Override
     public void execute() {
-        manualControlEnabled.setDefaultOption("Lift override off", false);
-        manualControlEnabled.addOption("Lift override on", true);
-
-        // Put the chooser on the SmartDashboard
-        SmartDashboard.putData("Lift override", manualControlEnabled);
         // Toggle manual control mode
         if (dPadDown.getAsBoolean() || dPadUp.getAsBoolean() || dPadLeft.getAsBoolean() || dPadRight.getAsBoolean()) {
-            manualControlEnabled.setDefaultOption("Lift override off", false);
+            manualControlEnabled = false;
         }
 
-        if (manualControlEnabled.getSelected()) {
+        if (manualControlEnabled) {
             // Manual control mode
             double speed = rightStickY.getAsDouble();
             liftSubsystem.manualOverrideControl(speed);
@@ -98,4 +94,7 @@ public class LiftCommand extends Command {
         liftSubsystem.resetPosition();
     }
 
+    public void manualControlSwitch() {
+        manualControlEnabled = true;
+    }
 }

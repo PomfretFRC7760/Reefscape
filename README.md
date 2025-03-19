@@ -8,7 +8,7 @@
 ### Features coming soon
 - [x] Semi autonomous control in teleop
     - [x] Robot pose from Apriltags
-    - [x] Automatic pathfinding to target pose (in progress)
+    - [x] Automatic pathfinding to target pose
     - [ ] Dynamic obstacle avoidance with neural processing
         - [x] Trained neural network detection pipeline
         - [ ] Dynamic path constraints based on obstacle detection

@@ -5,6 +5,7 @@
 - [ ] Test/fix autonomous driving with robot rotation
 - [ ] Fix gyroscope logic so it doesn't need to be zeroed at the start of teleop
 - [ ] Ensure gyroscope is being read correctly in auto 
+All are possibly fixed but have not been tested
 ### Features coming soon
 - [x] Semi autonomous control in teleop
     - [x] Robot pose from Apriltags
@@ -18,8 +19,8 @@
     - [ ] Limelight pipeline switching (we only have one limelight and have to make the most of it)
     - [x] Manual drive override (if semi auto ever craps the bed)
 - [ ] PID tuning and position control for lift and intakes
-- [ ] More commands for lift and intakes for autonomous
-- [ ] Rework subsystems to account for recent hardware design changes
+- [x] More commands for lift and intakes for autonomous
+- [x] Rework subsystems to account for recent hardware design changes
 - [x] Better control interface (move some controls over to smartdashboard)
 - [x] Build autos from smartdashboard
 - [x] Option to use premade autos

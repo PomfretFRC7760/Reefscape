@@ -13,8 +13,8 @@ public class CameraCommand extends Command {
         this.cameraSubsystem = cameraSubsystem;
         
         // Define options for camera selection
-        cameraChooser.setDefaultOption("Algae intake camera", 0);
-        cameraChooser.addOption("Coral intake camera", 1);
+        cameraChooser.setDefaultOption("Coral intake camera", 1);
+        cameraChooser.addOption("Algae intake camera", 0);
 
         // Display on SmartDashboard
         SmartDashboard.putData("Camera Selector", cameraChooser);

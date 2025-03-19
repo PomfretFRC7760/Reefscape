@@ -1,0 +1,226 @@
+<xml version="1.0">
+<dashboard>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.CameraServerViewer">
+		<location x="0" y="0"/>
+		<width>505</width>
+		<height>407</height>
+		<property name="Camera Choice" value=""/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1151" y="614"/>
+		<property name="Text" value="Closed loop control stuff"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1153" y="472"/>
+		<property name="Text" value="Lift info"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="382" y="429"/>
+		<property name="Text" value="Camera selection"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1045" y="329"/>
+		<property name="Text" value="Overrides"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1300" y="226"/>
+		<property name="Text" value="Positions"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1101" y="8"/>
+		<height>33</height>
+		<property name="Text" value="Auto program selection"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="742" y="491"/>
+		<property name="Text" value="Robot fixer"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1108" y="204"/>
+		<property name="Text" value="Score coral"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1343" y="78"/>
+		<property name="Text" value="Encoder positions"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1356" y="4"/>
+		<property name="Text" value="Motor velocities"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="551" y="2"/>
+		<property name="Text" value="Position"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="841" y="103"/>
+		<property name="Text" value="Enabled"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="837" y="170"/>
+		<property name="Text" value="Coral level"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="731" y="22"/>
+		<property name="Text" value="Human Player"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="838" y="19"/>
+		<property name="Text" value="Start position"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="922" y="12"/>
+		<property name="Text" value="Auto coral selection"/>
+	</static-widget>
+	<widget field="Enable lift manual control" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="1030" y="402"/>
+	</widget>
+	<widget field="Rear Right Setpoint" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1347" y="712"/>
+	</widget>
+	<widget field="Rear Left Setpoint" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1155" y="713"/>
+	</widget>
+	<widget field="Front Right Setpoint" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1349" y="688"/>
+	</widget>
+	<widget field="Front Left Setpoint" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1158" y="687"/>
+	</widget>
+	<widget field="Rear Right Setpoint RPM" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1377" y="655"/>
+	</widget>
+	<widget field="Rear Left Setpoint RPM" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1157" y="657"/>
+	</widget>
+	<widget field="Front Right Setpoint RPM" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1377" y="630"/>
+	</widget>
+	<widget field="Front Left Setpoint RPM" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1154" y="630"/>
+	</widget>
+	<widget field="Current Preset" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1155" y="491"/>
+	</widget>
+	<widget field="Right lift motor position" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1155" y="538"/>
+	</widget>
+	<widget field="Left lift motor position" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1152" y="514"/>
+	</widget>
+	<widget field="Algae intake override" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="1034" y="337"/>
+	</widget>
+	<widget field="Selected Robot Pose" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="556" y="601"/>
+		<width>510</width>
+	</widget>
+	<widget field="Auto Mode" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="1087" y="27"/>
+	</widget>
+	<widget field="Auto Letter" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="911" y="17"/>
+	</widget>
+	<widget field="Camera Selector" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="369" y="440"/>
+	</widget>
+	<widget field="Lift" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="825" y="175"/>
+	</widget>
+	<widget field="Station" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="719" y="29"/>
+	</widget>
+	<widget field="Save Coral 4" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="836" y="419"/>
+	</widget>
+	<widget field="L2 score" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="1110" y="247"/>
+	</widget>
+	<widget field="Use Command" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="831" y="108"/>
+	</widget>
+	<widget field="Save Coral 3" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="834" y="385"/>
+	</widget>
+	<widget field="Auto Chooser" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="1223" y="26"/>
+	</widget>
+	<widget field="L1 score" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="1106" y="220"/>
+	</widget>
+	<widget field="Save Coral 1 (Station is ignored, preload coral)" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="668" y="319"/>
+	</widget>
+	<widget field="Letter" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="538" y="7"/>
+	</widget>
+	<widget field="Save Starting Pose" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="664" y="291"/>
+	</widget>
+	<widget field="Start" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="823" y="23"/>
+	</widget>
+	<widget field="L3 score" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="1110" y="274"/>
+	</widget>
+	<widget field="Reset lift encoders" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="738" y="508"/>
+	</widget>
+	<widget field="Reset gyro" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="917" y="505"/>
+	</widget>
+	<widget field="Save Coral 2" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="832" y="350"/>
+	</widget>
+	<widget field="Reset pose with Limelight" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="739" y="543"/>
+	</widget>
+	<widget field="Rear Right Encoder" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1555" y="121"/>
+	</widget>
+	<widget field="Front Left Velocity" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1356" y="19"/>
+	</widget>
+	<widget field="Rear Right Velocity" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1556" y="43"/>
+	</widget>
+	<widget field="Robot X Position" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1298" y="267"/>
+	</widget>
+	<widget field="Front Right Encoder" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1555" y="92"/>
+		<height>25</height>
+	</widget>
+	<widget field="Robot chassis speeds" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1280" y="167"/>
+		<width>466</width>
+	</widget>
+	<widget field="Front Right Velocity" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1554" y="17"/>
+	</widget>
+	<widget field="Gyro angle" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1292" y="313"/>
+	</widget>
+	<widget field="Robot Pose" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1302" y="245"/>
+		<width>439</width>
+	</widget>
+	<widget field="Rear Left Encoder" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1345" y="123"/>
+	</widget>
+	<widget field="Robot Y Position" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1299" y="288"/>
+	</widget>
+	<widget field="Front Left Encoder" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1340" y="94"/>
+		<height>21</height>
+	</widget>
+	<widget field="Rear Left Velocity" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="1356" y="46"/>
+	</widget>
+</dashboard>
+<live-window>
+</live-window>
+	<hidden field="Field"/>
+	<hidden field="Alerts"/>
+	<hidden field="Lift override"/>
+</xml>

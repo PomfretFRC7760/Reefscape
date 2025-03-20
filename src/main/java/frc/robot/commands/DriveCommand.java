@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.CANDriveSubsystem;
 import frc.robot.subsystems.LiftIntakeRollerSubsystem;
@@ -109,9 +110,19 @@ public class DriveCommand extends Command {
     return (level == 2) ? new LiftPosition2(liftSubsystem) : new LiftPosition1(liftSubsystem);
   }
 
+  private Command simulationPoseReset(Pose2d targetPose) {
+    if (driveSubsystem.getGyroAngle() == 0.0) {
+      return new InstantCommand(() -> driveSubsystem.resetPose(targetPose));
+    }
+    else {
+      return Commands.none();
+    }
+  }
+
+
   // Helper method to create pathfinding commands dynamically
   private Command createPathfindingCommand(Pose2d targetPose) {
-    return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0);
+    return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0).andThen(simulationPoseReset(targetPose));
   }
 
   // Generic auto coral method

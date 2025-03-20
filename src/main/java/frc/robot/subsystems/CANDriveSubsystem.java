@@ -41,11 +41,6 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.VecBuilder;
-
 public class CANDriveSubsystem extends SubsystemBase {
     private final SparkFlex frontLeft;
     private final SparkFlex frontRight;
@@ -111,9 +106,6 @@ public class CANDriveSubsystem extends SubsystemBase {
         rearRight.getEncoder().setPosition(0);
         motorConfig = new SparkFlexConfig();
         RobotConfig config;
-
-        Matrix<N3, N1> initialStateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
-        Matrix<N3, N1> initialVisionMeasurementStdDevs = VecBuilder.fill(0.45, 0.45, 0.45);
 
         fieldMap = new Field2d();
 

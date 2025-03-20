@@ -4,7 +4,8 @@
 ### Bugfixes
 - [ ] Test/fix autonomous driving with robot rotation
 - [ ] Fix gyroscope logic so it doesn't need to be zeroed at the start of teleop
-- [ ] Ensure gyroscope is being read correctly in auto 
+- [ ] Ensure gyroscope is being read correctly in auto
+#### These are possibly fixed but aren't tested
 ### Features coming soon
 - [x] Semi autonomous control in teleop
     - [x] Robot pose from Apriltags

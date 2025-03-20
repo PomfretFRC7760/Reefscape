@@ -100,7 +100,7 @@ public class DriveCommand extends Command {
         0.0
     );
 
-    Command activePathindingCommand = pathfindingCommand.andThen(simulationPoseReset(selectedPose));
+    activePathfindingCommand = pathfindingCommand.andThen(simulationPoseReset(selectedPose));
 
     CommandScheduler.getInstance().schedule(activePathfindingCommand);
   }
@@ -172,6 +172,7 @@ public class DriveCommand extends Command {
   public void autoAbort() {
     if (activePathfindingCommand != null && !activePathfindingCommand.isFinished()) {
       activePathfindingCommand.cancel();
+      pathfindingCommand = null;
       activePathfindingCommand = null;
     }
   }
@@ -181,6 +182,8 @@ public class DriveCommand extends Command {
   public void end(boolean isInterrupted) {
     if (activePathfindingCommand != null) {
       activePathfindingCommand.cancel();
+      pathfindingCommand = null;
+      activePathfindingCommand = null;
     }
   }
 

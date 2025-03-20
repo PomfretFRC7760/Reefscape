@@ -226,6 +226,5 @@
 </dashboard>
 <live-window>
 </live-window>
-	<hidden field="Field"/>
 	<hidden field="Alerts"/>
 </xml>

@@ -263,25 +263,6 @@ public class CANDriveSubsystem extends SubsystemBase {
         return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, fieldCentricGyro);
     }
 
-    public ChassisSpeeds getRobotRelativeSpeedsUnaccounted() {
-        // Convert motor RPM to wheel linear velocity (m/s)
-        double frontLeftSpeed = (frontLeft.getEncoder().getVelocity());
-        double frontRightSpeed = (frontRight.getEncoder().getVelocity());
-        double rearLeftSpeed = (rearLeft.getEncoder().getVelocity());
-        double rearRightSpeed = (rearRight.getEncoder().getVelocity());
-    
-        // Create MecanumDriveWheelSpeeds with corrected wheel speeds
-        MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds(
-            -frontLeftSpeed, -frontRightSpeed, -rearLeftSpeed, -rearRightSpeed
-        );
-        poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
-        // Convert to chassis speeds
-        ChassisSpeeds robotRelativeSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
-
-        return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, fieldCentricGyro);
-    }
-    
     public void driveRobotRelative(ChassisSpeeds speeds) {
         // Get the robot's pose angle from the gyro
         poseAngle = gyroSubsystem.getGyroAngle();
@@ -315,42 +296,6 @@ public class CANDriveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Rear Left Setpoint", -wheelSpeeds.rearLeftMetersPerSecond);
         SmartDashboard.putNumber("Rear Right Setpoint", -wheelSpeeds.rearRightMetersPerSecond);
     }
-
-    public void driveRobotRelativeUnaccounted(ChassisSpeeds speeds) {
-        // Get the robot's pose angle from the gyro
-        poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
-        
-        // Convert the provided chassis speeds from field-relative to robot-relative
-        ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds.vxMetersPerSecond, 
-            speeds.vyMetersPerSecond, 
-            speeds.omegaRadiansPerSecond, 
-            fieldCentricGyro
-        );
-        
-        // Convert the robot-relative ChassisSpeeds to wheel speeds using kinematics
-        MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(robotRelativeSpeeds);
-        
-        // Apply gear ratio, invert all wheel speeds, and convert to RPM
-        frontLeftController.setReference((-wheelSpeeds.frontLeftMetersPerSecond) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        frontRightController.setReference((-wheelSpeeds.frontRightMetersPerSecond) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        rearLeftController.setReference((-wheelSpeeds.rearLeftMetersPerSecond) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        rearRightController.setReference((-wheelSpeeds.rearRightMetersPerSecond) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        
-        // Send data to SmartDashboard for debugging
-        SmartDashboard.putNumber("Front Left Setpoint RPM", (-wheelSpeeds.frontLeftMetersPerSecond) * GEAR_RATIO);
-        SmartDashboard.putNumber("Front Right Setpoint RPM", (-wheelSpeeds.frontRightMetersPerSecond) * GEAR_RATIO);
-        SmartDashboard.putNumber("Rear Left Setpoint RPM", (-wheelSpeeds.rearLeftMetersPerSecond) * GEAR_RATIO);
-        SmartDashboard.putNumber("Rear Right Setpoint RPM", (-wheelSpeeds.rearRightMetersPerSecond) * GEAR_RATIO);
-        
-        SmartDashboard.putNumber("Front Left Setpoint", -wheelSpeeds.frontLeftMetersPerSecond);
-        SmartDashboard.putNumber("Front Right Setpoint", -wheelSpeeds.frontRightMetersPerSecond);
-        SmartDashboard.putNumber("Rear Left Setpoint", -wheelSpeeds.rearLeftMetersPerSecond);
-        SmartDashboard.putNumber("Rear Right Setpoint", -wheelSpeeds.rearRightMetersPerSecond);
-    }
-    
-
     // normal teleop drive
     public void driveRobot(double ySpeed, double xSpeed, double zRotation) {
         poseAngle = gyroSubsystem.getGyroAngle();

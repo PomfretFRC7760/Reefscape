@@ -176,6 +176,7 @@ public class RobotContainer {
     SmartDashboard.putData("L2 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 2).schedule()));
     SmartDashboard.putData("L3 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 3).schedule()));
     SmartDashboard.putData("Enable lift manual control", new InstantCommand(() -> liftCommand.manualControlSwitch()));
+    SmartDashboard.putData("Abort semi-autonomous", new InstantCommand(() -> driveCommand.autoAbort()));
   }
 
   public void updateSelectedPose() {

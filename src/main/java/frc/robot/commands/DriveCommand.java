@@ -102,7 +102,9 @@ public class DriveCommand extends Command {
         0.0
     );
 
-    CommandScheduler.getInstance().schedule(activePathfindingCommand);
+    Command fullPathFindingCommand = activePathfindingCommand.andThen(simulationPoseReset(selectedPose));
+
+    CommandScheduler.getInstance().schedule(fullPathFindingCommand);
   }
 
   // Helper method to create lift commands dynamically

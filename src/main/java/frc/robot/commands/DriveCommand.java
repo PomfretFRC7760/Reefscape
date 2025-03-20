@@ -33,6 +33,7 @@ public class DriveCommand extends Command {
   
   private boolean robotCentricMode = false;
   private boolean lastRobotCentricButtonState = false;
+  private Command pathfindingCommand = null; // Store the pathfinding command
   private Command activePathfindingCommand = null; // Store the active pathfinding command
   
   private final PathConstraints constraints = new PathConstraints(

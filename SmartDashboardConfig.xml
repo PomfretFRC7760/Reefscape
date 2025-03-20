@@ -2,10 +2,16 @@
 <dashboard>
 	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.CameraServerViewer">
 		<location x="0" y="0"/>
-		<width>505</width>
-		<height>407</height>
+		<width>519</width>
+		<height>436</height>
 		<property name="Camera Choice" value=""/>
 	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.ConnectionIndicator">
+		<location x="1722" y="969"/>
+	</static-widget>
+	<widget field="Abort semi-autonomous" type="Command" class="edu.wpi.first.smartdashboard.gui.elements.Command">
+		<location x="548" y="564"/>
+	</widget>
 	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
 		<location x="1151" y="614"/>
 		<property name="Text" value="Closed loop control stuff"/>
@@ -222,5 +228,4 @@
 </live-window>
 	<hidden field="Field"/>
 	<hidden field="Alerts"/>
-	<hidden field="Lift override"/>
 </xml>

@@ -7,8 +7,6 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -16,13 +14,10 @@ import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -79,8 +74,6 @@ public class CANDriveSubsystem extends SubsystemBase {
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, targetRPM;
     private RobotConfig config;
 
-    private Field2d fieldMap;
-
     private final MecanumDriveKinematics kinematics = new MecanumDriveKinematics(
         new edu.wpi.first.math.geometry.Translation2d(ROBOT_LENGTH / 2, ROBOT_WIDTH / 2),  // Front Left
         new edu.wpi.first.math.geometry.Translation2d(ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2), // Front Right
@@ -105,9 +98,6 @@ public class CANDriveSubsystem extends SubsystemBase {
         rearLeft.getEncoder().setPosition(0);
         rearRight.getEncoder().setPosition(0);
         motorConfig = new SparkFlexConfig();
-        RobotConfig config;
-
-        fieldMap = new Field2d();
 
         frontLeftController = frontLeft.getClosedLoopController();
         frontRightController = frontRight.getClosedLoopController();
@@ -221,8 +211,6 @@ public class CANDriveSubsystem extends SubsystemBase {
     public void periodic() {
         updateOdometry();
         SmartDashboard.putString("Robot chassis speeds",getRobotRelativeSpeeds().toString());
-        fieldMap.setRobotPose(robotPose);
-        SmartDashboard.putData("Field", fieldMap);
     }
     
     public void resetPose(Pose2d newPose) {

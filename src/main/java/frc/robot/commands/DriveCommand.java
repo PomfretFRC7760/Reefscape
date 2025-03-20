@@ -70,10 +70,7 @@ public class DriveCommand extends Command {
 
     // Cancel active path command if joystick moves past threshold
     if ((Math.abs(ySpeed.getAsDouble()) > 0.25 || Math.abs(xSpeed.getAsDouble()) > 0.25 || Math.abs(zRotation.getAsDouble()) > 0.25) || abortAuto.getAsBoolean()) {
-      if (activePathfindingCommand != null && !activePathfindingCommand.isFinished()) {
-        activePathfindingCommand.cancel();
-        activePathfindingCommand = null; // Clear the reference
-      }
+      autoAbort();
     }
 
     // Drive based on selected mode
@@ -96,15 +93,15 @@ public class DriveCommand extends Command {
         return;
     }
 
-    activePathfindingCommand = AutoBuilder.pathfindToPose(
+    pathfindingCommand = AutoBuilder.pathfindToPose(
         selectedPose,
         constraints,
         0.0
     );
 
-    Command fullPathFindingCommand = activePathfindingCommand.andThen(simulationPoseReset(selectedPose));
+    Command activePathindingCommand = pathfindingCommand.andThen(simulationPoseReset(selectedPose));
 
-    CommandScheduler.getInstance().schedule(fullPathFindingCommand);
+    CommandScheduler.getInstance().schedule(activePathfindingCommand);
   }
 
   // Helper method to create lift commands dynamically
@@ -170,6 +167,13 @@ public class DriveCommand extends Command {
   
     return coral1.andThen(coral2).andThen(coral3).andThen(coral4);
   }
+
+  public void autoAbort() {
+    if (activePathfindingCommand != null && !activePathfindingCommand.isFinished()) {
+      activePathfindingCommand.cancel();
+      activePathfindingCommand = null;
+    }
+  }
   
 
   @Override
@@ -178,6 +182,7 @@ public class DriveCommand extends Command {
       activePathfindingCommand.cancel();
     }
   }
+
 
   @Override
   public boolean isFinished() {

@@ -14,8 +14,7 @@
         - [x] Trained neural network detection pipeline
         - [ ] Dynamic path constraints based on obstacle detection
         - [ ] Obstacle avoidance modes for different types of obstacles, alliance color, robot location and target
-    - [ ] Locate and drive to algae with neural processing (might not be added, singular limelight currently facing wrong way for this)
-    - [x] Intuitive control interface for semi autonomous (Smartdashboard sendablechoosers with reference field map?)
+    - [ ] Locate and drive to algae with neural processing (In progress)
     - [ ] Limelight pipeline switching (we only have one limelight and have to make the most of it)
     - [x] Manual drive override (if semi auto ever craps the bed)
 - [ ] PID tuning and position control for lift and intakes
@@ -24,3 +23,4 @@
 - [x] Better control interface (move some controls over to smartdashboard)
 - [x] Build autos from smartdashboard
 - [x] Option to use premade autos
+- [ ] Better way of selecting positions for semi autonomous

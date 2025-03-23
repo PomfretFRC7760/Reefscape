@@ -14,6 +14,7 @@
         - [x] Trained neural network detection pipeline
         - [ ] Dynamic path constraints based on obstacle detection
         - [ ] Obstacle avoidance modes for different types of obstacles, alliance color, robot location and target
+    - [x] SmartDashboard control interface to select positions
     - [ ] Locate and drive to algae with neural processing (In progress)
     - [ ] Limelight pipeline switching (we only have one limelight and have to make the most of it)
     - [x] Manual drive override (if semi auto ever craps the bed)

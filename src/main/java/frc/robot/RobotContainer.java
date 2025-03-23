@@ -168,9 +168,9 @@ public class RobotContainer {
     // Set the default command for the roller subsystem to an instance of
     // RollerCommand with the values provided by the triggers on the operator
     // controller
-    SmartDashboard.putData("Reset gyro", new InstantCommand(gyroCommand::resetGyro));
+    SmartDashboard.putData("Reset gyro", new InstantCommand(() -> gyroCommand.resetGyro()));
     liftSubsystem.setDefaultCommand(liftCommand);
-    SmartDashboard.putData("Reset lift encoders", new InstantCommand(liftCommand::resetLiftPosition));
+    SmartDashboard.putData("Reset lift encoders", new InstantCommand(() -> liftCommand.resetLiftPosition());
     rollerSubsystem.setDefaultCommand(new FloorRollerCommand(rollerSubsystem, () -> operatorController.a().getAsBoolean(), () -> operatorController.b().getAsBoolean(), () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis()));
     floorIntakeRotationSubsystem.setDefaultCommand(new FloorRotationCommand(floorIntakeRotationSubsystem, () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
     liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean()));
@@ -182,6 +182,8 @@ public class RobotContainer {
     SmartDashboard.putData("Enable lift manual control", new InstantCommand(() -> liftCommand.manualControlSwitch()));
     SmartDashboard.putData("Abort semi-autonomous", new InstantCommand(() -> driveCommand.autoAbort()));
     SmartDashboard.putData("Drive to algae", new InstantCommand(() -> driveCommand.driveToAlgae()));
+    SmartDashboard.putData("Apriltag pipeline", new InstantCommand(() -> limelightPoseReset.setPipeline0()));
+    SmartDashboard.putData("Neural network pipeline", new InstantCommand(() -> algaeLocatorCommand.setPipeline1()));
   }
 
   public void updateSelectedPose() {

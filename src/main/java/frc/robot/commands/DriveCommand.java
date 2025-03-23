@@ -19,6 +19,8 @@ import edu.wpi.first.math.util.Units;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import frc.robot.commands.AlgaeLocatorCommand;
+
 public class DriveCommand extends Command {
   private final DoubleSupplier ySpeed;
   private final DoubleSupplier xSpeed;
@@ -30,6 +32,8 @@ public class DriveCommand extends Command {
   private final AutoConfig autoConfig;
   private final LiftSubsystem liftSubsystem;
   private final LiftIntakeRollerSubsystem liftIntakeRollerSubsystem;
+
+  private final AlgaeLocatorCommand algaeLocatorCommand;
   
   private boolean robotCentricMode = false;
   private boolean lastRobotCentricButtonState = false;
@@ -45,7 +49,7 @@ public class DriveCommand extends Command {
                       BooleanSupplier robotCentric, BooleanSupplier abortAuto, 
                       CANDriveSubsystem driveSubsystem, LocationChooser locationChooser, 
                       AutoConfig autoConfig, LiftSubsystem liftSubsystem, 
-                      LiftIntakeRollerSubsystem liftIntakeRollerSubsystem) {
+                      LiftIntakeRollerSubsystem liftIntakeRollerSubsystem, AlgaeLocatorCommand algaeLocatorCommand) {
     this.ySpeed = ySpeed;
     this.xSpeed = xSpeed;
     this.zRotation = zRotation;
@@ -56,6 +60,7 @@ public class DriveCommand extends Command {
     this.autoConfig = autoConfig;
     this.liftSubsystem = liftSubsystem;
     this.liftIntakeRollerSubsystem = liftIntakeRollerSubsystem;
+    this.algaeLocatorCommand = algaeLocatorCommand;
 
     addRequirements(this.driveSubsystem);
   }
@@ -94,15 +99,22 @@ public class DriveCommand extends Command {
         return;
     }
 
-    pathfindingCommand = AutoBuilder.pathfindToPose(
-        selectedPose,
-        constraints,
-        0.0
-    );
+    pathfindingCommand = createPathfindingCommand(selectedPose);
 
     activePathfindingCommand = pathfindingCommand.andThen(simulationPoseReset(selectedPose));
 
     CommandScheduler.getInstance().schedule(activePathfindingCommand);
+  }
+
+  public void driveToAlgae(){
+    if (algaeLocatorCommand.getAlgaePose() != null) {
+      Pose2d algaePose = algaeLocatorCommand.getAlgaePose();
+      pathfindingCommand = createPathfindingCommand(algaePose);
+
+      activePathfindingCommand = pathfindingCommand.andThen(simulationPoseReset(algaePose));
+
+      CommandScheduler.getInstance().schedule(activePathfindingCommand);
+    }
   }
 
   // Helper method to create lift commands dynamically

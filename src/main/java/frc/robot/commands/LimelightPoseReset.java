@@ -33,4 +33,7 @@ public class LimelightPoseReset extends Command{
             }
     }
     
+    public void setPipeline0(){
+        visionSubsystem.setPipeline0();
+    }
 }

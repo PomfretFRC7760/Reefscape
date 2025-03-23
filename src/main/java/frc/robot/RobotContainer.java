@@ -42,6 +42,8 @@ import frc.robot.commands.LiftPosition1;
 import frc.robot.commands.LiftPosition2;
 import frc.robot.commands.LiftPosition3;
 import frc.robot.commands.LiftAndScore;
+import frc.robot.util.AlgaeLocator;
+import frc.robot.commands.AlgaeLocatorCommand;
 /**
  * This class is where the bulk of the robot should be declared. Since
  * Command-based is a
@@ -53,7 +55,7 @@ import frc.robot.commands.LiftAndScore;
  */
 public class RobotContainer {
   // The robot's subsystems
-
+  private final AlgaeLocator algaeLocator = new AlgaeLocator(this);
   private final FloorIntakeRollerSubsystem rollerSubsystem = new FloorIntakeRollerSubsystem();
   private final GyroSubsystem gyroSubsystem = new GyroSubsystem();
 
@@ -66,9 +68,11 @@ public class RobotContainer {
 
   private final LiftIntakeRollerSubsystem liftIntakeRollerSubsystem = new LiftIntakeRollerSubsystem();
   private final CameraSubsystem cameraSubsystem = new CameraSubsystem();
-  private final VisionSubsystem visionSubsystem = new VisionSubsystem(driveSubsystem);
+  private final VisionSubsystem visionSubsystem = new VisionSubsystem(driveSubsystem, algaeLocator);
 
   public final DriveCommand driveCommand;
+
+  public final AlgaeLocatorCommand algaeLocatorCommand = new AlgaeLocatorCommand(visionSubsystem);
 
 
   private final LocationChooser locationChooser = new LocationChooser(this);
@@ -114,7 +118,7 @@ public class RobotContainer {
         () -> -driverController.getRightX(),
         () -> driverController.y().getAsBoolean(), () -> driverController.x().getAsBoolean(),
         driveSubsystem,
-        locationChooser, autoConfig, liftSubsystem, liftIntakeRollerSubsystem
+        locationChooser, autoConfig, liftSubsystem, liftIntakeRollerSubsystem, algaeLocatorCommand
     );
     driveSubsystem.setDefaultCommand(driveCommand);
 
@@ -171,12 +175,13 @@ public class RobotContainer {
     floorIntakeRotationSubsystem.setDefaultCommand(new FloorRotationCommand(floorIntakeRotationSubsystem, () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
     liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean()));
     cameraSubsystem.setDefaultCommand(new CameraCommand(cameraSubsystem));
-    SmartDashboard.putData("Reset pose with Limelight", new InstantCommand(limelightPoseReset::resetPose));
+    SmartDashboard.putData("Reset pose with Limelight", new InstantCommand(() -> limelightPoseReset.resetPose()));
     SmartDashboard.putData("L1 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 1).schedule()));
     SmartDashboard.putData("L2 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 2).schedule()));
     SmartDashboard.putData("L3 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 3).schedule()));
     SmartDashboard.putData("Enable lift manual control", new InstantCommand(() -> liftCommand.manualControlSwitch()));
     SmartDashboard.putData("Abort semi-autonomous", new InstantCommand(() -> driveCommand.autoAbort()));
+    SmartDashboard.putData("Drive to algae", new InstantCommand(() -> driveCommand.driveToAlgae()));
   }
 
   public void updateSelectedPose() {

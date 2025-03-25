@@ -21,7 +21,7 @@ public class LiftSubsystem extends SubsystemBase {
     private RelativeEncoder leftLiftEncoder;
     private RelativeEncoder rightLiftEncoder;
 
-    public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, targetRPM;
+    private double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, targetRPM;
     public LiftSubsystem() {
         leftLiftMotor = new SparkMax(5, MotorType.kBrushless);
         rightLiftMotor = new SparkMax(6, MotorType.kBrushless);
@@ -31,14 +31,14 @@ public class LiftSubsystem extends SubsystemBase {
         rightLiftEncoder = rightLiftMotor.getEncoder();
         liftMotorConfig = new SparkMaxConfig();
 
-        kP = 5e-5; 
-    kI = 1e-6;
-    kD = 0; 
-    kIz = 0; 
-    kFF = 0.000156; 
-    kMaxOutput = 1; 
-    kMinOutput = -1;
-    maxRPM = 5700;
+        kP = 0.1; 
+        kI = 0;
+        kD = 0; 
+        kIz = 0; 
+        kFF = 0; 
+        kMaxOutput = 1; 
+        kMinOutput = -1;
+        maxRPM = 5700;
 
         liftMotorConfig.encoder
         .positionConversionFactor(1)
@@ -61,33 +61,10 @@ public class LiftSubsystem extends SubsystemBase {
 
     }
     public void setLiftPosition(double position) {
-        if (position >= leftLiftEncoder.getPosition()) {
-            raiseLift(position);
-        }
-        else if (position <= leftLiftEncoder.getPosition()) {
-            lowerLift(position);
-        }
+        leftLiftController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+        rightLiftController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
     }
-
-    public void raiseLift(double position) {
-        if (Math.abs(leftLiftEncoder.getPosition() - position) <= 1) {
-            leftLiftController.setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-            rightLiftController.setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        } else if (leftLiftEncoder.getPosition() < position) {
-            leftLiftController.setReference(1000, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-            rightLiftController.setReference(1000, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        }
-    }
-    
-    public void lowerLift(double position) {
-        if (Math.abs(leftLiftEncoder.getPosition() - position) <= 1) {
-            leftLiftController.setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-            rightLiftController.setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        } else if (leftLiftEncoder.getPosition() > position) {
-            leftLiftController.setReference(-1000, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-            rightLiftController.setReference(-1000, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        }
-    }
+        
     
     public void updatePosition() {
         SmartDashboard.putNumber("Left lift motor position", leftLiftEncoder.getPosition());

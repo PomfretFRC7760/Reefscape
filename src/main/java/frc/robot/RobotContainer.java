@@ -184,6 +184,9 @@ public class RobotContainer {
     SmartDashboard.putData("Drive to algae", new InstantCommand(() -> driveCommand.driveToAlgae()));
     SmartDashboard.putData("Apriltag pipeline", new InstantCommand(() -> limelightPoseReset.setPipeline0()));
     SmartDashboard.putData("Neural network pipeline", new InstantCommand(() -> algaeLocatorCommand.setPipeline1()));
+    SmartDashboard.putData("Stow algae intake", new InstantCommand(() -> floorIntakeRotationSubsystem.autoPosition(0)));
+    SmartDashboard.putData("Extend algae intake", new InstantCommand(() -> floorIntakeRotationSubsystem.autoPosition(50)));
+    SmartDashboard.putData("Reset algae intake encoder", new InstantCommand(() -> floorIntakeRotationSubsystem.resetEncoder()));
   }
 
   public void updateSelectedPose() {

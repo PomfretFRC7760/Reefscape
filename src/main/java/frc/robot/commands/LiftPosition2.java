@@ -10,7 +10,7 @@ public class LiftPosition2 extends Command{
     }
     @Override
     public void initialize() {
-        //lift.setLiftPosition(21.5);
+        lift.setLiftPosition(21.5);
         System.out.println("position 2");
     }
     @Override

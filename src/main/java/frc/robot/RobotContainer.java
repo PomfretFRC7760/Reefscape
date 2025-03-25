@@ -168,25 +168,25 @@ public class RobotContainer {
     // Set the default command for the roller subsystem to an instance of
     // RollerCommand with the values provided by the triggers on the operator
     // controller
-    SmartDashboard.putData("Reset gyro", new InstantCommand(() -> gyroCommand.resetGyro()));
+    SmartDashboard.putData("Reset gyro", new InstantCommand(() -> gyroCommand.resetGyro()).ignoringDisable(true));
     liftSubsystem.setDefaultCommand(liftCommand);
-    SmartDashboard.putData("Reset lift encoders", new InstantCommand(() -> liftCommand.resetLiftPosition()));
+    SmartDashboard.putData("Reset lift encoders", new InstantCommand(() -> liftCommand.resetLiftPosition()).ignoringDisable(true));
     rollerSubsystem.setDefaultCommand(new FloorRollerCommand(rollerSubsystem, () -> operatorController.a().getAsBoolean(), () -> operatorController.b().getAsBoolean(), () -> driverController.getLeftTriggerAxis(), () -> driverController.getRightTriggerAxis()));
     floorIntakeRotationSubsystem.setDefaultCommand(new FloorRotationCommand(floorIntakeRotationSubsystem, () -> operatorController.getLeftTriggerAxis(), () -> operatorController.getRightTriggerAxis()));
     liftIntakeRollerSubsystem.setDefaultCommand(new LiftRollerCommand(liftIntakeRollerSubsystem, () -> driverController.a().getAsBoolean(), () -> driverController.b().getAsBoolean()));
     cameraSubsystem.setDefaultCommand(new CameraCommand(cameraSubsystem));
-    SmartDashboard.putData("Reset pose with Limelight", new InstantCommand(() -> limelightPoseReset.resetPose()));
+    SmartDashboard.putData("Reset pose with Limelight", new InstantCommand(() -> limelightPoseReset.resetPose()).ignoringDisable(true));
     SmartDashboard.putData("L1 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 1).schedule()));
     SmartDashboard.putData("L2 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 2).schedule()));
     SmartDashboard.putData("L3 score", new InstantCommand(() -> new LiftAndScore(liftSubsystem,liftIntakeRollerSubsystem, 3).schedule()));
     SmartDashboard.putData("Enable lift manual control", new InstantCommand(() -> liftCommand.manualControlSwitch()));
     SmartDashboard.putData("Abort semi-autonomous", new InstantCommand(() -> driveCommand.autoAbort()));
     SmartDashboard.putData("Drive to algae", new InstantCommand(() -> driveCommand.driveToAlgae()));
-    SmartDashboard.putData("Apriltag pipeline", new InstantCommand(() -> limelightPoseReset.setPipeline0()));
-    SmartDashboard.putData("Neural network pipeline", new InstantCommand(() -> algaeLocatorCommand.setPipeline1()));
+    SmartDashboard.putData("Apriltag pipeline", new InstantCommand(() -> limelightPoseReset.setPipeline0()).ignoringDisable(true));
+    SmartDashboard.putData("Neural network pipeline", new InstantCommand(() -> algaeLocatorCommand.setPipeline1()).ignoringDisable(true));
     SmartDashboard.putData("Stow algae intake", new InstantCommand(() -> floorIntakeRotationSubsystem.autoPosition(0)));
     SmartDashboard.putData("Extend algae intake", new InstantCommand(() -> floorIntakeRotationSubsystem.autoPosition(50)));
-    SmartDashboard.putData("Reset algae intake encoder", new InstantCommand(() -> floorIntakeRotationSubsystem.resetEncoder()));
+    SmartDashboard.putData("Reset algae intake encoder", new InstantCommand(() -> floorIntakeRotationSubsystem.resetEncoder()).ignoringDisable(true));
   }
 
   public void updateSelectedPose() {

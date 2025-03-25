@@ -2,9 +2,9 @@
 ## Future additions
 
 ### Bugfixes
-- [ ] Test/fix autonomous driving with robot rotation
-- [ ] Fix gyroscope logic so it doesn't need to be zeroed at the start of teleop
-- [ ] Ensure gyroscope is being read correctly in auto
+- [x] Test/fix autonomous driving with robot rotation
+- [x] Fix gyroscope logic so it doesn't need to be zeroed at the start of teleop
+- [x] Ensure gyroscope is being read correctly in auto
 #### These are possibly fixed but aren't tested
 ### Features coming soon
 - [x] Semi autonomous control in teleop

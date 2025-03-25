@@ -9,18 +9,6 @@
           "data": {
             "pathName": "Demo Path"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Lift position 3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Lift position 1"
-          }
         }
       ]
     }

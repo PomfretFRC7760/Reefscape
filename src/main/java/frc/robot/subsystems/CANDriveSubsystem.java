@@ -244,20 +244,9 @@ public class CANDriveSubsystem extends SubsystemBase {
     }
 
     public void driveRobotRelative(ChassisSpeeds speeds) {
-        // Get the robot's pose angle from the gyro
-        poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
-        
-        // Convert the provided chassis speeds from field-relative to robot-relative
-        ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds.vxMetersPerSecond, 
-            speeds.vyMetersPerSecond, 
-            speeds.omegaRadiansPerSecond, 
-            fieldCentricGyro
-        );
         
         // Convert the robot-relative ChassisSpeeds to wheel speeds using kinematics
-        MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(robotRelativeSpeeds);
+        MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds);
         
         // Apply gear ratio, invert all wheel speeds, and convert to RPM
         frontLeftController.setReference((-wheelSpeeds.frontLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);

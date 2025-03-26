@@ -19,12 +19,16 @@ public class AlgaeLocatorCommand extends Command{
     @Override
     public void execute() {
         algaePose = visionSubsystem.getAlgaePose();
-        SmartDashboard.putString("Algae Pose", algaePose != null ? algaePose.toString() : "Unacceptable");
         
     }
 
     public Pose2d getAlgaePose(){
-        return algaePose;
+        Pose2d pose = visionSubsystem.getAlgaePose();
+        return pose;
+    }
+
+    public boolean validateTarget(){
+        return visionSubsystem.validateTarget();
     }
 
     public void setPipeline1(){

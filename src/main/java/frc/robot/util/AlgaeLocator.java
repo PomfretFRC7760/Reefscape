@@ -2,6 +2,7 @@ package frc.robot.util;
 import frc.robot.RobotContainer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.LimelightHelpers; // Ensure this is the correct package for LimelightHelpers
 
 public class AlgaeLocator {
@@ -15,8 +16,10 @@ public class AlgaeLocator {
 
     public Pose2d locateAlgae() {
         if (!LimelightHelpers.getTV("")) {
+            SmartDashboard.putBoolean("target detected", false);
             return null;
         }
+        SmartDashboard.putBoolean("target detected", true);
     
         Pose2d robotPose = r.driveSubsystem.getPose();
         double tx = LimelightHelpers.getTX("");
@@ -30,7 +33,8 @@ public class AlgaeLocator {
         double totalAngle = robotHeadingRadians + horizontalAngleRadians;
         double targetX = robotPose.getX() + distance * Math.cos(totalAngle);
         double targetY = robotPose.getY() + distance * Math.sin(totalAngle);
-        return new Pose2d(targetX, targetY, new Rotation2d(Math.toRadians(r.driveSubsystem.getGyroAngle() + tx)));
+        Pose2d algaePose = new Pose2d(targetX, targetY, new Rotation2d(Math.toRadians(r.driveSubsystem.getGyroAngle() + tx)));
+        return algaePose;
     }
 
     public boolean validateTarget() {

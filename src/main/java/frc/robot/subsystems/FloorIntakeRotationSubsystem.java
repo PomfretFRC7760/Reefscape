@@ -36,7 +36,7 @@ public class FloorIntakeRotationSubsystem extends SubsystemBase {
         kD = 0; 
         kIz = 0; 
         kFF = 0; 
-        kMaxOutput = 0.5;
+        kMaxOutput = 0.25;
         kMinOutput = -0.5;
         maxRPM = 5700;
 

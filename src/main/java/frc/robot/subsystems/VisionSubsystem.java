@@ -11,8 +11,6 @@ public class VisionSubsystem extends SubsystemBase {
     private final LimeLocalizationSubsystem limeF;
     private final AlgaeLocator algaeLocator;
 
-    private int CurrentPipeline = 0;
-
     // Constructor that takes a CANDriveSubsystem instance
     public VisionSubsystem(CANDriveSubsystem driveSubsystem, AlgaeLocator algaeLocator) {
         this.limeF = new LimeLocalizationSubsystem("", driveSubsystem);
@@ -20,31 +18,23 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public Pose2d limeFpose() {
-        if (CurrentPipeline == 0){
-            Optional<Pose2d> limePose = limeF.getPose();
-            return limePose.orElse(null);
-        }
-        else {
-            return null;
-        }
+        Optional<Pose2d> limePose = limeF.getPose();
+        return limePose.orElse(null);
     }
 
     public void setPipeline0(){
         LimelightHelpers.setPipelineIndex("",0);
-        CurrentPipeline = 0;
     }
 
     public void setPipeline1(){
         LimelightHelpers.setPipelineIndex("",1);
-        CurrentPipeline = 1;
     }
 
     public Pose2d getAlgaePose() {
-        if (CurrentPipeline == 1) {
-            return algaeLocator.locateAlgae();
-        }
-        else {
-            return null;
-        }
+        return algaeLocator.locateAlgae();
+    }
+
+    public boolean validateTarget(){
+        return algaeLocator.validateTarget();
     }
 }

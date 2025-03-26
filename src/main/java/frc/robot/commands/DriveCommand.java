@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.CANDriveSubsystem;
 import frc.robot.subsystems.LiftIntakeRollerSubsystem;
 import frc.robot.subsystems.LiftSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.util.AutoConfig;
 import frc.robot.util.LocationChooser;
 
@@ -90,6 +91,9 @@ public class DriveCommand extends Command {
     Pose2d selectedPose = locationChooser.selectCoralStation();
     SmartDashboard.putString("Selected Robot Pose", 
     (selectedPose != null) ? selectedPose.toString() : "None");
+    SmartDashboard.putBoolean("target found", algaeLocatorCommand.validateTarget());
+    Pose2d algaePose = algaeLocatorCommand.getAlgaePose();
+    SmartDashboard.putString("Algae Pose", algaePose != null ? algaePose.toString() : "Unacceptable");
   }
 
   public void driveToSelectedPose() {

@@ -182,10 +182,11 @@ public class RobotContainer {
     SmartDashboard.putData("Enable lift manual control", new InstantCommand(() -> liftCommand.manualControlSwitch()));
     SmartDashboard.putData("Abort semi-autonomous", new InstantCommand(() -> driveCommand.autoAbort()));
     SmartDashboard.putData("Drive to algae", new InstantCommand(() -> driveCommand.driveToAlgae()));
-    SmartDashboard.putData("Apriltag pipeline", new InstantCommand(() -> limelightPoseReset.setPipeline0()).ignoringDisable(true));
-    SmartDashboard.putData("Neural network pipeline", new InstantCommand(() -> algaeLocatorCommand.setPipeline1()).ignoringDisable(true));
+    SmartDashboard.putData("Apriltag pipeline", new InstantCommand(() -> visionSubsystem.setPipeline0()).ignoringDisable(true));
+    SmartDashboard.putData("Neural network pipeline", new InstantCommand(() -> visionSubsystem.setPipeline1()).ignoringDisable(true));
     SmartDashboard.putData("Stow algae intake", new InstantCommand(() -> floorIntakeRotationSubsystem.autoPosition(0)));
-    SmartDashboard.putData("Extend algae intake", new InstantCommand(() -> floorIntakeRotationSubsystem.autoPosition(-30)));
+    SmartDashboard.putData("Extend algae intake", new InstantCommand(() -> floorIntakeRotationSubsystem.autoPosition(-19)));
+    SmartDashboard.putData("Fully extend algae intake", new InstantCommand(() -> floorIntakeRotationSubsystem.autoPosition(-36.5)));
     SmartDashboard.putData("Reset algae intake encoder", new InstantCommand(() -> floorIntakeRotationSubsystem.resetEncoder()).ignoringDisable(true));
   }
 

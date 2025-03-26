@@ -27,4 +27,8 @@ public double getRotationSpeed() {
     double rate = gyro.getRate();
     return rate;
 }
+
+public void setGyroAngle(double angle){
+    gyro.setGyroAngle(IMUAxis.kZ, angle);
+}
 }

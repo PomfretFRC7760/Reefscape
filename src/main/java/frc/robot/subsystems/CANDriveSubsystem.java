@@ -71,6 +71,8 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     private SparkFlexConfig motorConfig;
 
+    private MecanumDriveWheelPositions wheelPositions;
+
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, targetRPM;
     private RobotConfig config;
 
@@ -186,7 +188,7 @@ public class CANDriveSubsystem extends SubsystemBase {
         double rearRightDistance = (rearRightRotations / GEAR_RATIO) * WHEEL_CIRCUMFERENCE;
     
         // Create a MecanumDriveWheelPositions object using the encoder distances
-        MecanumDriveWheelPositions wheelPositions = new MecanumDriveWheelPositions(
+        wheelPositions = new MecanumDriveWheelPositions(
             -frontLeftDistance, -rearLeftDistance, -frontRightDistance, -rearRightDistance
         );
     
@@ -215,8 +217,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     
     public void resetPose(Pose2d newPose) {
         MecanumDriveWheelPositions initialWheelPositions = new MecanumDriveWheelPositions(0, 0, 0, 0);
-        //gyroSubsystem.gyroReset();
-        //gyroSubsystem.gyroCalibration();
+        gyroSubsystem.setGyroAngle(newPose.getRotation().getDegrees());
         poseAngle = gyroSubsystem.getGyroAngle();
         odometry.resetPosition(Rotation2d.fromDegrees(poseAngle), initialWheelPositions, newPose);
     }
@@ -269,7 +270,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     public void driveRobot(double ySpeed, double xSpeed, double zRotation) {
         poseAngle = gyroSubsystem.getGyroAngle();
         fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
-        mecanumDrive.driveCartesian(-ySpeed, -xSpeed, zRotation, fieldCentricGyro);
+        mecanumDrive.driveCartesian(-ySpeed, -xSpeed, zRotation, Rotation2d.fromDegrees(-gyroSubsystem.getGyroAngle()));
     }
     
     public void driveRobotCentric(double ySpeed, double xSpeed, double zRotation) {
@@ -282,5 +283,9 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     public double getRotationSpeed() {
         return gyroSubsystem.getRotationSpeed();
+    }
+    public void resetGyro(){
+        gyroSubsystem.gyroReset();
+        robotPose = odometry.update(Rotation2d.fromDegrees(gyroSubsystem.getGyroAngle()), wheelPositions);
     }
 }

@@ -29,6 +29,7 @@ public class FloorIntakeRotationSubsystem extends SubsystemBase {
         motor = new SparkMax(7, MotorType.kBrushless);
         controller = motor.getClosedLoopController();
         encoder = motor.getEncoder();
+        config = new SparkMaxConfig();
 
         kP = 0.1; 
         kI = 0;

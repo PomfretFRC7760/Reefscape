@@ -87,10 +87,10 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     public CANDriveSubsystem(GyroSubsystem gyroSubsystem) {
         // Initialize motors
-        frontRight = new SparkFlex(2, MotorType.kBrushless);
-        rearRight = new SparkFlex(3, MotorType.kBrushless);
-        frontLeft = new SparkFlex(1, MotorType.kBrushless);
-        rearLeft = new SparkFlex(4, MotorType.kBrushless);
+        frontRight = new SparkFlex(4, MotorType.kBrushless);
+        rearRight = new SparkFlex(1, MotorType.kBrushless);
+        frontLeft = new SparkFlex(3, MotorType.kBrushless);
+        rearLeft = new SparkFlex(2, MotorType.kBrushless);
         this.gyroSubsystem = gyroSubsystem;
         poseAngle = gyroSubsystem.getGyroAngle();
         mecanumDrive = new MecanumDrive(frontLeft, rearLeft, frontRight, rearRight);
@@ -189,7 +189,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     
         // Create a MecanumDriveWheelPositions object using the encoder distances
         wheelPositions = new MecanumDriveWheelPositions(
-            -frontLeftDistance, -rearLeftDistance, -frontRightDistance, -rearRightDistance
+            frontLeftDistance, rearLeftDistance, frontRightDistance, rearRightDistance
         );
     
         poseAngle = gyroSubsystem.getGyroAngle();
@@ -234,14 +234,12 @@ public class CANDriveSubsystem extends SubsystemBase {
     
         // Create MecanumDriveWheelSpeeds with corrected wheel speeds
         MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds(
-            -frontLeftSpeed, -frontRightSpeed, -rearLeftSpeed, -rearRightSpeed
+            frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed
         );
-        poseAngle = gyroSubsystem.getGyroAngle();
-        fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
         // Convert to chassis speeds
         ChassisSpeeds robotRelativeSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
 
-        return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, fieldCentricGyro);
+        return robotRelativeSpeeds;
     }
 
     public void driveRobotRelative(ChassisSpeeds speeds) {
@@ -250,10 +248,10 @@ public class CANDriveSubsystem extends SubsystemBase {
         MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds);
         
         // Apply gear ratio, invert all wheel speeds, and convert to RPM
-        frontLeftController.setReference((-wheelSpeeds.frontLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        frontRightController.setReference((-wheelSpeeds.frontRightMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        rearLeftController.setReference((-wheelSpeeds.rearLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-        rearRightController.setReference((-wheelSpeeds.rearRightMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        frontLeftController.setReference((wheelSpeeds.frontLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        frontRightController.setReference((wheelSpeeds.frontRightMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        rearLeftController.setReference((wheelSpeeds.rearLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        rearRightController.setReference((wheelSpeeds.rearRightMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE)) * GEAR_RATIO, SparkFlex.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
         
         // Send data to SmartDashboard for debugging
         SmartDashboard.putNumber("Front Left Setpoint RPM", (-wheelSpeeds.frontLeftMetersPerSecond * 60 / (WHEEL_CIRCUMFERENCE * GEAR_RATIO)) * GEAR_RATIO);
@@ -270,11 +268,11 @@ public class CANDriveSubsystem extends SubsystemBase {
     public void driveRobot(double ySpeed, double xSpeed, double zRotation) {
         poseAngle = gyroSubsystem.getGyroAngle();
         fieldCentricGyro = Rotation2d.fromDegrees(poseAngle);
-        mecanumDrive.driveCartesian(-ySpeed, -xSpeed, zRotation, Rotation2d.fromDegrees(-gyroSubsystem.getGyroAngle()));
+        mecanumDrive.driveCartesian(ySpeed, xSpeed, -zRotation, Rotation2d.fromDegrees(-gyroSubsystem.getGyroAngle()));
     }
     
     public void driveRobotCentric(double ySpeed, double xSpeed, double zRotation) {
-        mecanumDrive.driveCartesian(-ySpeed, -xSpeed, zRotation);
+        mecanumDrive.driveCartesian(ySpeed, xSpeed, -zRotation);
     }
 
     public double getGyroAngle() {

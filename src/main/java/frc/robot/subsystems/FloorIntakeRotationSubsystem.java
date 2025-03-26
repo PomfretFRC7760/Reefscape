@@ -36,9 +36,9 @@ public class FloorIntakeRotationSubsystem extends SubsystemBase {
         kD = 0; 
         kIz = 0; 
         kFF = 0; 
-        kMaxOutput = 1; 
-        kMinOutput = -1;
-        maxRPM = 6700;
+        kMaxOutput = 0.5;
+        kMinOutput = -0.5;
+        maxRPM = 5700;
 
         config.encoder
         .positionConversionFactor(1)

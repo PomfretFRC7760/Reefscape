@@ -25,3 +25,4 @@
 - [x] Build autos from smartdashboard
 - [x] Option to use premade autos
 - [ ] Better way of selecting positions for semi autonomous
+- [ ] Algae remover subsystem and controls
